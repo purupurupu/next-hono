@@ -15,7 +15,7 @@ services:
       - "3001:3000"
     volumes:
       - ./backend:/app
-      - go_cache:/go/pkg/mod
+      - /app/node_modules
     depends_on:
       - db
       - redis
@@ -82,4 +82,3 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  go_cache:
