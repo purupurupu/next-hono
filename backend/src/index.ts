@@ -3,8 +3,8 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { getConfig } from "./lib/config";
-import { ApiError } from "./lib/errors";
 import { closeDb } from "./lib/db";
+import { ApiError } from "./lib/errors";
 
 const app = new Hono();
 
@@ -17,7 +17,7 @@ app.use(
     origin: ["http://localhost:3000"],
     credentials: true,
     exposeHeaders: ["Authorization"],
-  })
+  }),
 );
 
 // Health check
@@ -43,7 +43,7 @@ app.onError((err, c) => {
         message: "内部エラーが発生しました",
       },
     },
-    500
+    500,
   );
 });
 
@@ -56,7 +56,7 @@ app.notFound((c) => {
         message: "リソースが見つかりません",
       },
     },
-    404
+    404,
   );
 });
 

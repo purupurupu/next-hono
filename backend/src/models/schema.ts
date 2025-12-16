@@ -1,16 +1,16 @@
+import { relations } from "drizzle-orm";
 import {
-  pgTable,
   bigint,
-  varchar,
-  text,
   boolean,
-  integer,
   date,
+  index,
+  integer,
+  pgTable,
+  text,
   timestamp,
   uniqueIndex,
-  index,
+  varchar,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 
 // ============================================
 // Users
@@ -31,7 +31,7 @@ export const users = pgTable(
   (table) => [
     uniqueIndex("users_email_idx").on(table.email),
     uniqueIndex("users_reset_password_token_idx").on(table.resetPasswordToken),
-  ]
+  ],
 );
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -51,7 +51,9 @@ export const categories = pgTable(
   "categories",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 50 }).notNull(),
     color: varchar("color", { length: 7 }).notNull().default("#6B7280"),
     todosCount: integer("todos_count").notNull().default(0),
@@ -61,7 +63,7 @@ export const categories = pgTable(
   (table) => [
     index("categories_user_id_idx").on(table.userId),
     uniqueIndex("categories_user_id_name_idx").on(table.userId, table.name),
-  ]
+  ],
 );
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -79,7 +81,9 @@ export const tags = pgTable(
   "tags",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     name: varchar("name", { length: 30 }).notNull(),
     color: varchar("color", { length: 7 }).default("#6B7280"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -88,7 +92,7 @@ export const tags = pgTable(
   (table) => [
     index("tags_user_id_idx").on(table.userId),
     uniqueIndex("tags_user_id_name_idx").on(table.userId, table.name),
-  ]
+  ],
 );
 
 export const tagsRelations = relations(tags, ({ one, many }) => ({
@@ -106,8 +110,12 @@ export const todos = pgTable(
   "todos",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
-    categoryId: bigint("category_id", { mode: "number" }).references(() => categories.id, { onDelete: "set null" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    categoryId: bigint("category_id", { mode: "number" }).references(() => categories.id, {
+      onDelete: "set null",
+    }),
     title: varchar("title", { length: 255 }).notNull(),
     description: text("description"),
     completed: boolean("completed").default(false),
@@ -133,7 +141,7 @@ export const todos = pgTable(
     index("todos_status_idx").on(table.status),
     index("todos_created_at_idx").on(table.createdAt),
     index("todos_updated_at_idx").on(table.updatedAt),
-  ]
+  ],
 );
 
 export const todosRelations = relations(todos, ({ one, many }) => ({
@@ -158,8 +166,12 @@ export const todoTags = pgTable(
   "todo_tags",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    todoId: bigint("todo_id", { mode: "number" }).notNull().references(() => todos.id, { onDelete: "cascade" }),
-    tagId: bigint("tag_id", { mode: "number" }).notNull().references(() => tags.id, { onDelete: "cascade" }),
+    todoId: bigint("todo_id", { mode: "number" })
+      .notNull()
+      .references(() => todos.id, { onDelete: "cascade" }),
+    tagId: bigint("tag_id", { mode: "number" })
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -167,7 +179,7 @@ export const todoTags = pgTable(
     index("todo_tags_todo_id_idx").on(table.todoId),
     index("todo_tags_tag_id_idx").on(table.tagId),
     uniqueIndex("todo_tags_todo_id_tag_id_idx").on(table.todoId, table.tagId),
-  ]
+  ],
 );
 
 export const todoTagsRelations = relations(todoTags, ({ one }) => ({
@@ -188,7 +200,9 @@ export const comments = pgTable(
   "comments",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     commentableType: varchar("commentable_type", { length: 50 }).notNull(),
     commentableId: bigint("commentable_id", { mode: "number" }).notNull(),
     content: text("content").notNull(),
@@ -199,9 +213,13 @@ export const comments = pgTable(
   (table) => [
     index("comments_user_id_idx").on(table.userId),
     index("comments_commentable_idx").on(table.commentableType, table.commentableId),
-    index("comments_commentable_deleted_at_idx").on(table.commentableType, table.commentableId, table.deletedAt),
+    index("comments_commentable_deleted_at_idx").on(
+      table.commentableType,
+      table.commentableId,
+      table.deletedAt,
+    ),
     index("comments_deleted_at_idx").on(table.deletedAt),
-  ]
+  ],
 );
 
 export const commentsRelations = relations(comments, ({ one }) => ({
@@ -218,8 +236,12 @@ export const todoHistories = pgTable(
   "todo_histories",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    todoId: bigint("todo_id", { mode: "number" }).notNull().references(() => todos.id, { onDelete: "cascade" }),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    todoId: bigint("todo_id", { mode: "number" })
+      .notNull()
+      .references(() => todos.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     fieldName: varchar("field_name", { length: 50 }).notNull(),
     oldValue: text("old_value"),
     newValue: text("new_value"),
@@ -231,7 +253,7 @@ export const todoHistories = pgTable(
     index("todo_histories_user_id_idx").on(table.userId),
     index("todo_histories_todo_id_created_at_idx").on(table.todoId, table.createdAt),
     index("todo_histories_field_name_idx").on(table.fieldName),
-  ]
+  ],
 );
 
 export const todoHistoriesRelations = relations(todoHistories, ({ one }) => ({
@@ -252,7 +274,9 @@ export const notes = pgTable(
   "notes",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     title: varchar("title", { length: 150 }),
     bodyMd: text("body_md"),
     bodyPlain: text("body_plain"),
@@ -273,7 +297,7 @@ export const notes = pgTable(
     index("notes_trashed_at_idx").on(table.trashedAt),
     index("notes_pinned_idx").on(table.pinned),
     index("notes_last_edited_at_idx").on(table.lastEditedAt),
-  ]
+  ],
 );
 
 export const notesRelations = relations(notes, ({ one, many }) => ({
@@ -291,8 +315,12 @@ export const noteRevisions = pgTable(
   "note_revisions",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    noteId: bigint("note_id", { mode: "number" }).notNull().references(() => notes.id, { onDelete: "cascade" }),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    noteId: bigint("note_id", { mode: "number" })
+      .notNull()
+      .references(() => notes.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     title: varchar("title", { length: 150 }),
     bodyMd: text("body_md"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -302,7 +330,7 @@ export const noteRevisions = pgTable(
     index("note_revisions_note_id_idx").on(table.noteId),
     index("note_revisions_user_id_idx").on(table.userId),
     index("note_revisions_note_id_created_at_idx").on(table.noteId, table.createdAt),
-  ]
+  ],
 );
 
 export const noteRevisionsRelations = relations(noteRevisions, ({ one }) => ({
@@ -328,9 +356,7 @@ export const jwtDenylists = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
-  (table) => [
-    index("jwt_denylists_jti_idx").on(table.jti),
-  ]
+  (table) => [index("jwt_denylists_jti_idx").on(table.jti)],
 );
 
 // ============================================
@@ -340,7 +366,9 @@ export const files = pgTable(
   "files",
   {
     id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint("user_id", { mode: "number" }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     attachableType: varchar("attachable_type", { length: 50 }).notNull(),
     attachableId: bigint("attachable_id", { mode: "number" }).notNull(),
     filename: varchar("filename", { length: 255 }).notNull(),
@@ -356,7 +384,7 @@ export const files = pgTable(
     index("files_user_id_idx").on(table.userId),
     index("files_attachable_idx").on(table.attachableType, table.attachableId),
     index("files_storage_key_idx").on(table.storageKey),
-  ]
+  ],
 );
 
 export const filesRelations = relations(files, ({ one }) => ({

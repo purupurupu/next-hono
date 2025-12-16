@@ -12,7 +12,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint ./src",
+    "lint:fix": "biome lint --write ./src",
+    "format": "biome format --write ./src",
+    "check": "biome check --write ./src"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.952.0",
@@ -28,6 +32,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.9",
     "@types/bcrypt": "^6.0.0",
     "@types/bun": "latest",
     "@types/node": "^25.0.2",

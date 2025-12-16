@@ -25,7 +25,7 @@ export class ApiError extends HTTPException {
     status: number,
     code: ErrorCode,
     message: string,
-    details?: Record<string, string[]>
+    details?: Record<string, string[]>,
   ) {
     super(status, { message });
     this.code = code;
@@ -43,10 +43,7 @@ export class ApiError extends HTTPException {
   }
 }
 
-export function validationError(
-  message: string,
-  details?: Record<string, string[]>
-): ApiError {
+export function validationError(message: string, details?: Record<string, string[]>): ApiError {
   return new ApiError(400, "VALIDATION_ERROR", message, details);
 }
 
@@ -59,9 +56,7 @@ export function forbidden(message = "アクセス権限がありません"): Api
 }
 
 export function notFound(resource: string, id?: number | string): ApiError {
-  const message = id
-    ? `${resource}（ID: ${id}）が見つかりません`
-    : `${resource}が見つかりません`;
+  const message = id ? `${resource}（ID: ${id}）が見つかりません` : `${resource}が見つかりません`;
   return new ApiError(404, "NOT_FOUND", message);
 }
 
@@ -69,9 +64,7 @@ export function conflict(message: string): ApiError {
   return new ApiError(409, "CONFLICT", message);
 }
 
-export function editTimeExpired(
-  message = "編集可能時間を過ぎています"
-): ApiError {
+export function editTimeExpired(message = "編集可能時間を過ぎています"): ApiError {
   return new ApiError(403, "EDIT_TIME_EXPIRED", message);
 }
 

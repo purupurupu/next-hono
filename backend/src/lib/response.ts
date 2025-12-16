@@ -16,7 +16,7 @@ export function paginate<T>(
   data: T[],
   total: number,
   page: number,
-  perPage: number
+  perPage: number,
 ): ListResponse<T> {
   return {
     data,
