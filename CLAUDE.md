@@ -10,8 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Full-stack Todo application with:
 
 - **Frontend**: Next.js 16 with TypeScript, React 19.2, Tailwind CSS v4
-- **Package Manager**: pnpm (NOT npm)
-- **Backend**: Go 1.25 with Echo framework, GORM, JWT authentication
+- **Package Manager**: pnpm (frontend), bun (backend)
+- **Backend**: Hono (TypeScript) with Drizzle ORM, JWT authentication
 - **Database**: PostgreSQL 15
 - **Cache**: Redis 7
 - **Storage**: RustFS (S3互換)
@@ -39,8 +39,8 @@ docker compose logs -f frontend
 
 # Rebuild after dependency updates
 docker compose build frontend    # After package.json changes
-docker compose build backend     # After go.mod changes
-docker compose build --no-cache frontend  # Force rebuild
+docker compose build backend     # After package.json changes
+docker compose build --no-cache backend  # Force rebuild
 ```
 
 ### Frontend Development
@@ -53,96 +53,77 @@ docker compose exec frontend pnpm run lint:fix   # ESLint with auto-fix
 docker compose exec frontend pnpm run typecheck  # TypeScript check
 ```
 
-### Backend Development
+### Backend Development (Hono/Bun)
+
+```bash
+# Run development server with hot reload
+docker compose exec backend bun run dev
+
+# Run tests
+docker compose exec backend bun run test
+docker compose exec backend bun run test:watch
+
+# TypeScript check
+docker compose exec backend bun run typecheck
+
+# Database operations
+docker compose exec backend bun run db:generate  # Generate migrations
+docker compose exec backend bun run db:push      # Push schema to database
+docker compose exec backend bun run db:studio    # Open Drizzle Studio
+```
+
+### Database
 
 ```bash
 # Start test database
 docker compose up -d db_test
 
-# Run all tests
-docker compose exec backend go test -v ./...
-
-# Run specific package tests
-docker compose exec backend go test -v ./internal/handler/...
-
-# Run single test function
-docker compose exec backend go test -v ./internal/handler/... -run TestTodoCreate
-
-# Run tests matching pattern (e.g., all Comment tests)
-docker compose exec backend go test -v ./internal/handler/... -run "TestComment"
-
-# Run with coverage
-docker compose exec backend go test -cover ./...
-docker compose exec backend go test -coverprofile=coverage.out ./...
-
-# Lint (requires golangci-lint)
-docker compose exec backend golangci-lint run
-
-# Build
-docker compose exec backend go build -o bin/api cmd/api/main.go
+# Apply schema changes (development)
+DATABASE_URL=postgres://postgres:password@localhost:5432/todo_next_hono bunx drizzle-kit push --force
 ```
 
-**Test Utilities** (`internal/testutil/`):
-- `SetupTestFixture(t)` - 全テスト依存関係を初期化
-- `f.CreateUser(email)` - テストユーザー作成（JWT token返却）
-- `f.CreateTodo(userID, title)` - テストTodo作成
-- `f.CreateComment(userID, todoID, content)` - テストコメント作成
-- `f.CreateNote(userID, title, bodyMD)` - テストNote作成（初期リビジョン付き）
-- `f.CallAuth(token, method, path, body, handler)` - 認証付きハンドラ呼び出し
-
-**Seed Data** (`cmd/seed/`):
-```bash
-docker compose exec backend go run ./cmd/seed/main.go
-```
-テストユーザー（test@example.com / password123）とサンプルデータを作成
-
-### Database
-
-Database auto-migrates on startup in development mode via GORM AutoMigrate.
-
-## Backend Architecture (Go)
+## Backend Architecture (Hono/TypeScript)
 
 ```
 backend/
-├── cmd/
-│   ├── api/main.go           # Entry point, DI, routing
-│   └── seed/main.go          # Sample data seeder
-├── internal/
-│   ├── config/               # Environment config (envconfig)
-│   ├── handler/              # HTTP handlers (Echo)
-│   ├── middleware/           # JWT auth middleware
-│   ├── model/                # GORM models
-│   ├── repository/           # Data access layer (interfaces.go にインターフェース定義)
-│   ├── service/              # Business logic (TodoService: 履歴記録含む)
-│   ├── testutil/             # テストヘルパー (fixture, helpers)
-│   ├── validator/            # Request validation (go-playground/validator)
-│   ├── errors/               # API error handling (EditTimeExpired など)
-│   └── storage/              # S3互換ストレージ (RustFS)
-└── pkg/
-    ├── database/             # DB connection
-    ├── response/             # Standardized API responses
-    └── util/                 # Time formatting utilities
+├── src/
+│   ├── index.ts              # Entry point, Hono app, middleware
+│   ├── routes/               # HTTP route handlers
+│   ├── services/             # Business logic
+│   ├── repositories/         # Data access layer
+│   ├── models/
+│   │   └── schema.ts         # Drizzle ORM schema (11 tables)
+│   ├── validators/           # Zod validation schemas
+│   ├── middleware/           # Auth middleware
+│   └── lib/
+│       ├── config.ts         # Environment config (Zod)
+│       ├── db.ts             # Drizzle database connection
+│       ├── errors.ts         # ApiError class
+│       └── response.ts       # Response helpers
+├── drizzle/                  # Migration files
+├── tests/                    # Vitest tests
+├── drizzle.config.ts         # Drizzle configuration
+└── package.json
 ```
 
 **Key Dependencies**:
-- Echo v4 (web framework)
-- GORM (ORM)
-- golang-jwt/jwt v5 (authentication)
-- go-playground/validator v10 (validation)
-- zerolog (structured logging)
-- Air (hot reload in development)
+- Hono (web framework)
+- Drizzle ORM (database)
+- Zod + @hono/zod-validator (validation)
+- jose (JWT authentication)
+- bcrypt (password hashing)
+- @aws-sdk/client-s3 (S3 storage)
+- sharp (image processing)
+- vitest (testing)
 
-**Current Implementation Status**:
-- Authentication (sign_up, sign_in, sign_out) - Complete
-- Todo CRUD (with position ordering) - Complete
-- Categories CRUD (with todo_count counter cache) - Complete
-- Tags CRUD - Complete
-- TodoService (business logic layer) - Complete
-- Todo Search/Filter (GET /api/v1/todos/search) - Complete
-- Comments (15分編集制限、ソフトデリート) - Complete
-- TodoHistory (自動履歴記録、日本語メッセージ) - Complete
-- Files (RustFS/S3互換ストレージ、サムネイル生成) - Complete
-- Notes (Markdownメモ、リビジョン管理) - Complete
+**Database Tables** (11):
+- users, todos, categories, tags
+- todo_tags (junction)
+- comments (polymorphic, soft delete)
+- todo_histories (audit log)
+- notes, note_revisions (Markdown with versioning)
+- jwt_denylists (token invalidation)
+- files (S3 storage metadata)
 
 ## Frontend Architecture
 
@@ -191,6 +172,7 @@ frontend/src/
 - `/api/v1/todos/:todo_id/files` - File attachments (upload, download, thumb)
 - `/api/v1/notes` - Notes CRUD (Markdownメモ)
 - `/api/v1/notes/:id/revisions` - Note revisions (履歴管理・復元)
+- `/health` - Health check
 
 **APIレスポンス形式**:
 - 一覧エンドポイント: `{data: [...], meta: {total, current_page, ...}}`
@@ -200,20 +182,21 @@ frontend/src/
 
 **Backend** (compose.yml):
 - `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - JWT signing key
+- `JWT_SECRET` - JWT signing key (min 32 chars)
 - `PORT` - Server port (default: 3000, mapped to 3001)
-- `ENV` - Environment (development/production)
+- `ENV` - Environment (development/production/test)
 - `REDIS_URL` - Redis connection string
+- `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` - S3 config
 
 **Database**:
-- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+- `POSTGRES_DB=todo_next_hono`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
 
 ## Development Guidelines
 
-1. **Package Manager**: Always use pnpm for frontend
+1. **Package Manager**: pnpm for frontend, bun for backend
 2. **API Calls**: Use provided API clients, not direct fetch
 3. **Docker**: Rebuild images after dependency changes
-4. **Before PR**: Run `pnpm run lint`, `pnpm run typecheck`, `go test ./...`
+4. **Before PR**: Run `pnpm run lint`, `pnpm run typecheck`, `bun run test`
 
 ## Git Conventions
 
@@ -232,21 +215,26 @@ chore: 依存関係を更新
 ## Documentation
 
 See `docs/` for detailed documentation:
-- `docs/migration/go-implementation-guide.md` - Go backend patterns
+- `docs/migration/hono-migration-checklist.md` - Migration checklist
+- `docs/migration/hono-implementation-guide.md` - Hono patterns
+- `docs/migration/database-schema.md` - Database schema
 - `docs/api/` - API reference
-- `docs/architecture/` - System design
 
 ## Troubleshooting
 
 ### Module not found errors in Docker
 ```bash
 docker compose down
-docker compose build --no-cache frontend
+docker compose build --no-cache backend
 docker compose up -d
 ```
 
-### Go dependency issues
+### Database connection issues
 ```bash
-docker compose exec backend go mod tidy
-docker compose build backend
+# Check database is running
+docker compose logs db
+
+# Recreate database
+docker compose down -v db
+docker compose up -d db
 ```

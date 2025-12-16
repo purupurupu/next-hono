@@ -11,66 +11,68 @@
 ## Phase 0: 環境セットアップ
 
 ### プロジェクト初期化
-- [ ] `backend-hono/` ディレクトリ作成
-- [ ] `bun init` 実行
-- [ ] 依存パッケージインストール
-  - [ ] `hono`
-  - [ ] `drizzle-orm`
-  - [ ] `drizzle-kit`
-  - [ ] `postgres` (node-postgres)
-  - [ ] `@hono/zod-validator`
-  - [ ] `zod`
-  - [ ] `jose` (JWT)
-  - [ ] `bcrypt` または `@node-rs/bcrypt`
-  - [ ] `@aws-sdk/client-s3`
-  - [ ] `sharp` (サムネイル生成)
-  - [ ] `uuid`
-  - [ ] `pino` (ロギング)
-  - [ ] `vitest` (テスト)
-  - [ ] `@types/bcrypt`
+- [x] `backend/` ディレクトリ作成
+- [x] `bun init` 実行
+- [x] 依存パッケージインストール
+  - [x] `hono`
+  - [x] `drizzle-orm`
+  - [x] `drizzle-kit`
+  - [x] `postgres` (node-postgres)
+  - [x] `@hono/zod-validator`
+  - [x] `zod`
+  - [x] `jose` (JWT)
+  - [x] `bcrypt`
+  - [x] `@aws-sdk/client-s3`
+  - [x] `sharp` (サムネイル生成)
+  - [x] `uuid`
+  - [x] `pino` (ロギング)
+  - [x] `vitest` (テスト)
+  - [x] `@types/bcrypt`
 
 ### ディレクトリ構造作成
-- [ ] `src/index.ts` - エントリーポイント
-- [ ] `src/routes/` - ルートハンドラー
-- [ ] `src/services/` - ビジネスロジック
-- [ ] `src/repositories/` - データアクセス層
-- [ ] `src/models/` - Drizzle スキーマ
-- [ ] `src/validators/` - Zod スキーマ
-- [ ] `src/middleware/` - ミドルウェア
-- [ ] `src/lib/` - ユーティリティ
-- [ ] `drizzle/` - マイグレーション
-- [ ] `tests/` - テスト
+- [x] `src/index.ts` - エントリーポイント
+- [x] `src/routes/` - ルートハンドラー
+- [x] `src/services/` - ビジネスロジック
+- [x] `src/repositories/` - データアクセス層
+- [x] `src/models/` - Drizzle スキーマ
+- [x] `src/validators/` - Zod スキーマ
+- [x] `src/middleware/` - ミドルウェア
+- [x] `src/lib/` - ユーティリティ
+- [x] `drizzle/` - マイグレーション
+- [x] `tests/` - テスト
 
 ### Docker設定
-- [ ] `backend-hono/Dockerfile` 作成
-- [ ] `compose.yml` に backend-hono サービス追加
-- [ ] 環境変数設定（DATABASE_URL, JWT_SECRET, S3設定等）
+- [x] `backend/Dockerfile` 作成
+- [x] `compose.yml` に backend サービス追加（Bun対応）
+- [x] 環境変数設定（DATABASE_URL, JWT_SECRET, S3設定等）
 
 ### 基盤コード実装
-- [ ] `src/lib/db.ts` - Drizzle DB接続
-- [ ] `src/lib/config.ts` - 環境変数読み込み
-- [ ] `src/lib/errors.ts` - ApiError クラス定義
-- [ ] `src/lib/response.ts` - レスポンスヘルパー
-- [ ] `src/index.ts` - Honoアプリ + ルーティング設定
+- [x] `src/lib/db.ts` - Drizzle DB接続
+- [x] `src/lib/config.ts` - 環境変数読み込み（Zod）
+- [x] `src/lib/errors.ts` - ApiError クラス定義
+- [x] `src/lib/response.ts` - レスポンスヘルパー
+- [x] `src/index.ts` - Honoアプリ + ミドルウェア設定
 
 ### Drizzle スキーマ定義
-- [ ] `src/models/schema.ts` - 全テーブル定義
-  - [ ] users テーブル
-  - [ ] todos テーブル
-  - [ ] categories テーブル
-  - [ ] tags テーブル
-  - [ ] todo_tags テーブル（中間）
-  - [ ] comments テーブル
-  - [ ] todo_histories テーブル
-  - [ ] files テーブル
-  - [ ] notes テーブル
-  - [ ] note_revisions テーブル
-  - [ ] jwt_denylists テーブル
+- [x] `src/models/schema.ts` - 全テーブル定義
+  - [x] users テーブル
+  - [x] todos テーブル
+  - [x] categories テーブル
+  - [x] tags テーブル
+  - [x] todo_tags テーブル（中間）
+  - [x] comments テーブル
+  - [x] todo_histories テーブル
+  - [x] files テーブル
+  - [x] notes テーブル
+  - [x] note_revisions テーブル
+  - [x] jwt_denylists テーブル
 
 ### マイグレーション
-- [ ] `drizzle.config.ts` 設定
-- [ ] `drizzle-kit generate` でマイグレーション生成
-- [ ] `drizzle-kit migrate` でマイグレーション実行
+- [x] `drizzle.config.ts` 設定
+- [x] `drizzle-kit push` でスキーマ適用
+
+### Linter・Formatter
+- [x] Biome設定（`biome.json`）
 
 ---
 
