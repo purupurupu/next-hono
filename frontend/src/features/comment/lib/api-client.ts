@@ -1,0 +1,24 @@
+import { ApiClient } from "@/lib/api-client";
+import { Comment, CreateCommentData, UpdateCommentData } from "../types/comment";
+
+export class CommentApiClient extends ApiClient {
+  async getComments(todoId: number): Promise<Comment[]> {
+    const response = await this.get<Comment[]>(`/todos/${todoId}/comments`);
+    // 配列であることを保証
+    return Array.isArray(response) ? response : [];
+  }
+
+  async createComment(todoId: number, data: CreateCommentData): Promise<Comment> {
+    return this.post<Comment>(`/todos/${todoId}/comments`, data);
+  }
+
+  async updateComment(todoId: number, commentId: number, data: UpdateCommentData): Promise<Comment> {
+    return this.patch<Comment>(`/todos/${todoId}/comments/${commentId}`, data);
+  }
+
+  async deleteComment(todoId: number, commentId: number): Promise<void> {
+    await this.delete(`/todos/${todoId}/comments/${commentId}`);
+  }
+}
+
+export const commentApiClient = new CommentApiClient();
