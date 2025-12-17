@@ -87,24 +87,58 @@ DATABASE_URL=postgres://postgres:password@localhost:5432/todo_next_hono bunx dri
 ```
 backend/
 ├── src/
-│   ├── index.ts              # Entry point, Hono app, middleware
-│   ├── routes/               # HTTP route handlers
-│   ├── services/             # Business logic
-│   ├── repositories/         # Data access layer
+│   ├── index.ts              # Entry point
+│   ├── features/             # Feature-based modules
+│   │   └── auth/             # 認証機能
+│   │       ├── routes.ts     # HTTP route handlers
+│   │       ├── service.ts    # Business logic
+│   │       ├── validators.ts # Zod validation schemas
+│   │       ├── token-schema.ts # JWT payload schema
+│   │       ├── user-repository.ts
+│   │       └── jwt-denylist-repository.ts
+│   ├── shared/               # Cross-feature shared code
+│   │   ├── middleware/       # Auth middleware
+│   │   └── validators/       # Response schemas
 │   ├── models/
 │   │   └── schema.ts         # Drizzle ORM schema (11 tables)
-│   ├── validators/           # Zod validation schemas
-│   ├── middleware/           # Auth middleware
 │   └── lib/
+│       ├── app.ts            # Hono app factory
 │       ├── config.ts         # Environment config (Zod)
+│       ├── constants.ts      # Application constants
+│       ├── container.ts      # Service factory (DI)
 │       ├── db.ts             # Drizzle database connection
-│       ├── errors.ts         # ApiError class
-│       └── response.ts       # Response helpers
+│       ├── errors.ts         # ApiError class, error helpers
+│       ├── response.ts       # Response helpers
+│       ├── type-guards.ts    # Type guard utilities
+│       └── validator.ts      # Zod validator helpers
 ├── drizzle/                  # Migration files
 ├── tests/                    # Vitest tests
 ├── drizzle.config.ts         # Drizzle configuration
 └── package.json
 ```
+
+**Directory Structure Guidelines**:
+
+| ディレクトリ | 役割 | 例 |
+|-------------|------|-----|
+| `features/` | ドメイン固有のビジネスロジック | routes, service, repository, validators |
+| `shared/` | 複数featureで使う**ドメイン関連**コード | middleware, 共通バリデーションスキーマ |
+| `lib/` | ドメイン非依存の**インフラ・ユーティリティ** | db, config, errors, type-guards |
+| `models/` | DBスキーマ定義 | Drizzle ORM schema |
+
+**配置判断フロー**:
+```
+そのコードはビジネスロジック/ドメイン知識を含む？
+├─ No  → lib/（純粋なユーティリティ）
+└─ Yes → 複数featureで使用する？
+         ├─ No  → features/[domain]/
+         └─ Yes → shared/
+```
+
+**具体例**:
+- `type-guards.ts` → `lib/`（汎用ユーティリティ、ドメイン非依存）
+- `auth middleware` → `shared/`（認証ドメイン知識を含む、複数featureで使用）
+- `user-repository.ts` → `features/auth/`（authでのみ使用、将来共有時にsharedへ移動）
 
 **Key Dependencies**:
 - Hono (web framework)
@@ -197,6 +231,12 @@ frontend/src/
 2. **API Calls**: Use provided API clients, not direct fetch
 3. **Docker**: Rebuild images after dependency changes
 4. **Before PR**: Run `pnpm run lint`, `pnpm run typecheck`, `bun run test`
+
+## TypeScript Guidelines
+
+- **型アサーション（as）は極力使用しない**: 型安全性を維持するため、型アサーションの使用は避ける。代わりに型ガード、ジェネリクス、適切な型定義を使用する。型アサーションが必要な場合は、その理由をコメントで明記する。
+- **TSDocを極力書く**: 関数、クラス、インターフェース、型には`@param`、`@returns`、`@throws`、`@example`などを含むTSDocコメントを記述する。
+- **Zodの検証にはsafeParseを使用する**: `parse()` は例外をスローするため、`safeParse()` を使用して結果をチェックする。これにより予期しない例外を防ぎ、エラーハンドリングを明示的に行える。
 
 ## Git Conventions
 

@@ -79,50 +79,50 @@
 ## Phase 1: 認証システム（最優先）
 
 ### バリデータ（Zod）
-- [ ] `src/validators/auth.ts`
-  - [ ] `signUpSchema` - email, password, password_confirmation, name
-  - [ ] `signInSchema` - email, password
+- [x] `src/validators/auth.ts`
+  - [x] `signUpSchema` - email, password, password_confirmation, name
+  - [x] `signInSchema` - email, password
 
 ### Repository
-- [ ] `src/repositories/user.ts`
-  - [ ] `UserRepositoryInterface` 定義
-  - [ ] `findByEmail(email: string)` - メールでユーザー検索
-  - [ ] `create(user: NewUser)` - ユーザー作成
-  - [ ] `findById(id: number)` - ID検索
-- [ ] `src/repositories/jwt-denylist.ts`
-  - [ ] `add(jti: string, exp: Date)` - トークン無効化登録
-  - [ ] `exists(jti: string)` - 無効化チェック
+- [x] `src/repositories/user.ts`
+  - [x] `UserRepositoryInterface` 定義
+  - [x] `findByEmail(email: string)` - メールでユーザー検索
+  - [x] `create(user: NewUser)` - ユーザー作成
+  - [x] `findById(id: number)` - ID検索
+- [x] `src/repositories/jwt-denylist.ts`
+  - [x] `add(jti: string, exp: Date)` - トークン無効化登録
+  - [x] `exists(jti: string)` - 無効化チェック
 
 ### Service
-- [ ] `src/services/auth.ts`
-  - [ ] `signUp(email, password, passwordConfirmation, name)` - ユーザー登録
-  - [ ] `signIn(email, password)` - ログイン
-  - [ ] `signOut(jti: string, exp: Date)` - ログアウト
-  - [ ] `generateToken(user)` - JWT生成（jose使用）
-  - [ ] `validateToken(token: string)` - JWT検証
+- [x] `src/services/auth.ts`
+  - [x] `signUp(email, password, passwordConfirmation, name)` - ユーザー登録
+  - [x] `signIn(email, password)` - ログイン
+  - [x] `signOut(jti: string, exp: Date)` - ログアウト
+  - [x] `generateToken(user)` - JWT生成（jose使用）
+  - [x] `validateToken(token: string)` - JWT検証
 
 ### Middleware
-- [ ] `src/middleware/auth.ts`
-  - [ ] `jwtAuth()` - JWT認証ミドルウェア
-  - [ ] `getCurrentUser(c: Context)` - 現在のユーザー取得
-  - [ ] jwt_denylistチェック統合
+- [x] `src/middleware/auth.ts`
+  - [x] `jwtAuth()` - JWT認証ミドルウェア
+  - [x] `getCurrentUser(c: Context)` - 現在のユーザー取得
+  - [x] jwt_denylistチェック統合
 
 ### Routes
-- [ ] `src/routes/auth.ts`
-  - [ ] `POST /auth/sign_up` - 新規登録
-  - [ ] `POST /auth/sign_in` - ログイン
-  - [ ] `DELETE /auth/sign_out` - ログアウト（要認証）
+- [x] `src/routes/auth.ts`
+  - [x] `POST /auth/sign_up` - 新規登録
+  - [x] `POST /auth/sign_in` - ログイン
+  - [x] `DELETE /auth/sign_out` - ログアウト（要認証）
 
 ### CORS設定
-- [ ] `@hono/cors` ミドルウェア設定
-  - [ ] `origin: http://localhost:3000`
-  - [ ] `credentials: true`
-  - [ ] `exposeHeaders: ['Authorization']`
+- [x] `@hono/cors` ミドルウェア設定
+  - [x] `origin: http://localhost:3000`
+  - [x] `credentials: true`
+  - [x] `exposeHeaders: ['Authorization']`
 
 ### テスト
-- [ ] 登録テスト（成功・重複エラー・バリデーションエラー）
-- [ ] ログインテスト（成功・認証エラー）
-- [ ] ログアウトテスト（成功・トークン無効化確認）
+- [x] 登録テスト（成功・重複エラー・バリデーションエラー）
+- [x] ログインテスト（成功・認証エラー）
+- [x] ログアウトテスト（成功・トークン無効化確認）
 
 ### フロントエンド統合確認
 - [ ] 登録→ログイン→ログアウトフロー動作確認

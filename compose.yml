@@ -21,7 +21,7 @@ services:
       - redis
       - rustfs
     environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/todo_next
+      - DATABASE_URL=postgres://postgres:password@db:5432/todo_next_hono
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-key-change-in-production}
       - PORT=3000
       - ENV=development
