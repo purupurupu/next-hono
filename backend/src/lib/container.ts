@@ -9,12 +9,14 @@ import { UserRepository } from "../repositories/user";
 import { AuthService } from "../services/auth";
 import { getDb } from "./db";
 
+/** データベース接続（シングルトン） */
+const db = getDb();
+
 /**
  * AuthServiceのインスタンスを取得する
  * @returns AuthServiceインスタンス
  */
 export function getAuthService(): AuthService {
-  const db = getDb();
   return new AuthService(
     new UserRepository(db),
     new JwtDenylistRepository(db),
@@ -26,7 +28,6 @@ export function getAuthService(): AuthService {
  * @returns UserRepositoryインスタンス
  */
 export function getUserRepository(): UserRepository {
-  const db = getDb();
   return new UserRepository(db);
 }
 
@@ -35,6 +36,5 @@ export function getUserRepository(): UserRepository {
  * @returns JwtDenylistRepositoryインスタンス
  */
 export function getJwtDenylistRepository(): JwtDenylistRepository {
-  const db = getDb();
   return new JwtDenylistRepository(db);
 }
