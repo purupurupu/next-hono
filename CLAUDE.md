@@ -118,9 +118,27 @@ backend/
 ```
 
 **Directory Structure Guidelines**:
-- `features/[domain]/` - ドメイン固有のコード（routes, service, repository, validators）
-- `shared/` - 複数featureで共有するコード（単一featureでのみ使用する場合はfeature内に配置）
-- `lib/` - アプリケーションインフラ、ユーティリティ
+
+| ディレクトリ | 役割 | 例 |
+|-------------|------|-----|
+| `features/` | ドメイン固有のビジネスロジック | routes, service, repository, validators |
+| `shared/` | 複数featureで使う**ドメイン関連**コード | middleware, 共通バリデーションスキーマ |
+| `lib/` | ドメイン非依存の**インフラ・ユーティリティ** | db, config, errors, type-guards |
+| `models/` | DBスキーマ定義 | Drizzle ORM schema |
+
+**配置判断フロー**:
+```
+そのコードはビジネスロジック/ドメイン知識を含む？
+├─ No  → lib/（純粋なユーティリティ）
+└─ Yes → 複数featureで使用する？
+         ├─ No  → features/[domain]/
+         └─ Yes → shared/
+```
+
+**具体例**:
+- `type-guards.ts` → `lib/`（汎用ユーティリティ、ドメイン非依存）
+- `auth middleware` → `shared/`（認証ドメイン知識を含む、複数featureで使用）
+- `user-repository.ts` → `features/auth/`（authでのみ使用、将来共有時にsharedへ移動）
 
 **Key Dependencies**:
 - Hono (web framework)
