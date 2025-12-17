@@ -1,8 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { getDb } from "../lib/db";
-import { validationError } from "../lib/errors";
 import { created, noContent, ok } from "../lib/response";
+import { handleValidationError } from "../lib/validator";
 import { getAuthContext, jwtAuth } from "../middleware/auth";
 import { JwtDenylistRepository } from "../repositories/jwt-denylist";
 import { UserRepository } from "../repositories/user";
@@ -20,19 +20,7 @@ function getAuthService() {
 
 auth.post(
   "/sign_up",
-  zValidator("json", signUpSchema, (result) => {
-    if (!result.success) {
-      const details: Record<string, string[]> = {};
-      for (const issue of result.error.issues) {
-        const path = issue.path.join(".");
-        if (!details[path]) {
-          details[path] = [];
-        }
-        details[path].push(issue.message);
-      }
-      throw validationError("入力内容に誤りがあります", details);
-    }
-  }),
+  zValidator("json", signUpSchema, handleValidationError()),
   async (c) => {
     const body = c.req.valid("json");
     const authService = getAuthService();
@@ -50,19 +38,7 @@ auth.post(
 
 auth.post(
   "/sign_in",
-  zValidator("json", signInSchema, (result) => {
-    if (!result.success) {
-      const details: Record<string, string[]> = {};
-      for (const issue of result.error.issues) {
-        const path = issue.path.join(".");
-        if (!details[path]) {
-          details[path] = [];
-        }
-        details[path].push(issue.message);
-      }
-      throw validationError("入力内容に誤りがあります", details);
-    }
-  }),
+  zValidator("json", signInSchema, handleValidationError()),
   async (c) => {
     const body = c.req.valid("json");
     const authService = getAuthService();
