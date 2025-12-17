@@ -2,10 +2,14 @@ import bcrypt from "bcrypt";
 import * as jose from "jose";
 import { v4 as uuidv4 } from "uuid";
 import { getConfig } from "../lib/config";
-import { conflict, unauthorized } from "../lib/errors";
+import { conflict, unauthorized, validationError } from "../lib/errors";
 import type { User } from "../models/schema";
 import type { JwtDenylistRepositoryInterface } from "../repositories/jwt-denylist";
 import type { UserRepositoryInterface } from "../repositories/user";
+import {
+  type TokenPayload,
+  tokenPayloadSchema,
+} from "../validators/token";
 
 /** bcryptのコスト係数 */
 const BCRYPT_COST = 12;
@@ -13,19 +17,8 @@ const BCRYPT_COST = 12;
 /** JWTの有効期限 */
 const JWT_EXPIRES_IN = "24h";
 
-/** JWTペイロードの型定義 */
-export interface TokenPayload {
-  /** ユーザーID（文字列） */
-  sub: string;
-  /** JWT ID（一意識別子） */
-  jti: string;
-  /** ユーザーのメールアドレス */
-  email: string;
-  /** 有効期限（UNIX時間） */
-  exp: number;
-  /** 発行時刻（UNIX時間） */
-  iat: number;
-}
+// TokenPayloadはvalidators/token.tsからre-export
+export type { TokenPayload } from "../validators/token";
 
 /** 認証レスポンスの型定義 */
 export interface AuthResponse {
@@ -63,7 +56,7 @@ export class AuthService {
    * @param passwordConfirmation - パスワード確認
    * @param name - ユーザー名（オプション）
    * @returns 認証レスポンス（ユーザー情報とトークン）
-   * @throws パスワードが一致しない場合は401エラー
+   * @throws パスワードが一致しない場合は422エラー
    * @throws メールアドレスが既に登録されている場合は409エラー
    */
   async signUp(
@@ -73,7 +66,9 @@ export class AuthService {
     name?: string,
   ): Promise<AuthResponse> {
     if (password !== passwordConfirmation) {
-      throw unauthorized("パスワードが一致しません");
+      throw validationError("パスワードが一致しません", {
+        password_confirmation: ["パスワードが一致しません"],
+      });
     }
 
     const existingUser = await this.userRepository.findByEmail(email);
@@ -167,32 +162,19 @@ export class AuthService {
 
     const { payload } = await jose.jwtVerify(token, secret);
 
-    const jti = payload.jti;
-    if (typeof jti !== "string") {
+    const result = tokenPayloadSchema.safeParse(payload);
+    if (!result.success) {
       throw unauthorized("無効なトークンです");
     }
 
-    const isDenied = await this.jwtDenylistRepository.exists(jti);
+    const validatedPayload = result.data;
+
+    const isDenied = await this.jwtDenylistRepository.exists(validatedPayload.jti);
     if (isDenied) {
       throw unauthorized("トークンは無効化されています");
     }
 
-    const sub = payload.sub;
-    const email = payload.email;
-    const exp = payload.exp;
-    const iat = payload.iat;
-
-    if (typeof sub !== "string" || typeof email !== "string" || typeof exp !== "number" || typeof iat !== "number") {
-      throw unauthorized("無効なトークンです");
-    }
-
-    return {
-      sub,
-      jti,
-      email,
-      exp,
-      iat,
-    };
+    return validatedPayload;
   }
 
   /**

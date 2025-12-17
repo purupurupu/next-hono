@@ -1,10 +1,9 @@
 import type { Context, MiddlewareHandler } from "hono";
-import { getDb } from "../lib/db";
+import { getAuthService, getUserRepository } from "../lib/container";
 import { unauthorized } from "../lib/errors";
+import { hasProperties, isRecord } from "../lib/type-guards";
 import type { User } from "../models/schema";
-import { JwtDenylistRepository } from "../repositories/jwt-denylist";
-import { UserRepository } from "../repositories/user";
-import { AuthService, type TokenPayload } from "../services/auth";
+import type { TokenPayload } from "../services/auth";
 
 /** 認証コンテキストのキー */
 const AUTH_CONTEXT_KEY = "auth";
@@ -26,11 +25,10 @@ export interface AuthContext {
  * @returns AuthContextかどうか
  */
 function isAuthContext(value: unknown): value is AuthContext {
-  if (typeof value !== "object" || value === null) {
+  if (!isRecord(value)) {
     return false;
   }
-  const obj = value as Record<string, unknown>;
-  return "payload" in obj && "user" in obj;
+  return hasProperties(value, ["payload", "user"]);
 }
 
 /**
@@ -39,11 +37,10 @@ function isAuthContext(value: unknown): value is AuthContext {
  * @returns Userかどうか
  */
 function isUser(value: unknown): value is User {
-  if (typeof value !== "object" || value === null) {
+  if (!isRecord(value)) {
     return false;
   }
-  const obj = value as Record<string, unknown>;
-  return "id" in obj && "email" in obj && "encryptedPassword" in obj;
+  return hasProperties(value, ["id", "email", "encryptedPassword"]);
 }
 
 /**
@@ -73,10 +70,8 @@ export function jwtAuth(): MiddlewareHandler {
     }
 
     try {
-      const db = getDb();
-      const userRepository = new UserRepository(db);
-      const jwtDenylistRepository = new JwtDenylistRepository(db);
-      const authService = new AuthService(userRepository, jwtDenylistRepository);
+      const authService = getAuthService();
+      const userRepository = getUserRepository();
 
       const payload = await authService.validateToken(token);
 

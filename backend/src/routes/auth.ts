@@ -1,22 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { getDb } from "../lib/db";
+import { getAuthService } from "../lib/container";
 import { created, noContent, ok } from "../lib/response";
 import { handleValidationError } from "../lib/validator";
 import { getAuthContext, jwtAuth } from "../middleware/auth";
-import { JwtDenylistRepository } from "../repositories/jwt-denylist";
-import { UserRepository } from "../repositories/user";
-import { AuthService } from "../services/auth";
 import { signInSchema, signUpSchema } from "../validators/auth";
 
 const auth = new Hono();
-
-function getAuthService() {
-  const db = getDb();
-  const userRepository = new UserRepository(db);
-  const jwtDenylistRepository = new JwtDenylistRepository(db);
-  return new AuthService(userRepository, jwtDenylistRepository);
-}
 
 auth.post(
   "/sign_up",
