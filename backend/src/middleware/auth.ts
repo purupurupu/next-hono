@@ -1,6 +1,6 @@
 import type { Context, MiddlewareHandler } from "hono";
 import { getAuthService, getUserRepository } from "../lib/container";
-import { unauthorized } from "../lib/errors";
+import { handleJoseError, isJoseError, unauthorized } from "../lib/errors";
 import { hasProperties, isRecord } from "../lib/type-guards";
 import type { User } from "../models/schema";
 import type { TokenPayload } from "../validators/token";
@@ -87,15 +87,8 @@ export function jwtAuth(): MiddlewareHandler {
 
       await next();
     } catch (error) {
-      if (error instanceof Error && error.name === "JWTExpired") {
-        throw unauthorized("トークンの有効期限が切れています");
-      }
-      if (error instanceof Error && error.message.includes("signature")) {
-        throw unauthorized("無効なトークンです");
-      }
-      // jose ライブラリのJWSエラー（無効なトークン形式）
-      if (error instanceof Error && (error.name === "JWSInvalid" || error.message.includes("Invalid"))) {
-        throw unauthorized("無効なトークンです");
+      if (isJoseError(error)) {
+        throw handleJoseError(error);
       }
       throw error;
     }

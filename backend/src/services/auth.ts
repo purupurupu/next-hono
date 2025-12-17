@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import * as jose from "jose";
 import { v4 as uuidv4 } from "uuid";
 import { getConfig } from "../lib/config";
+import { AUTH } from "../lib/constants";
 import { conflict, unauthorized, validationError } from "../lib/errors";
 import type { User } from "../models/schema";
 import type { JwtDenylistRepositoryInterface } from "../repositories/jwt-denylist";
@@ -10,12 +11,6 @@ import {
   type TokenPayload,
   tokenPayloadSchema,
 } from "../validators/token";
-
-/** bcryptのコスト係数 */
-const BCRYPT_COST = 12;
-
-/** JWTの有効期限 */
-const JWT_EXPIRES_IN = "24h";
 
 /** 認証レスポンスの型定義 */
 export interface AuthResponse {
@@ -73,7 +68,7 @@ export class AuthService {
       throw conflict("このメールアドレスは既に登録されています");
     }
 
-    const encryptedPassword = await bcrypt.hash(password, BCRYPT_COST);
+    const encryptedPassword = await bcrypt.hash(password, AUTH.BCRYPT_COST);
 
     const user = await this.userRepository.create({
       email,
@@ -141,7 +136,7 @@ export class AuthService {
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime(JWT_EXPIRES_IN)
+      .setExpirationTime(AUTH.JWT_EXPIRES_IN)
       .sign(secret);
 
     return token;

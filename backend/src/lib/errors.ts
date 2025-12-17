@@ -130,3 +130,39 @@ export function editTimeExpired(message = "編集可能時間を過ぎていま�
 export function internalError(message = "内部エラーが発生しました"): ApiError {
   return new ApiError(500, "INTERNAL_ERROR", message);
 }
+
+/** joseライブラリのエラー名 */
+const JOSE_ERROR_NAMES = [
+  "JWTExpired",
+  "JWSInvalid",
+  "JWSSignatureVerificationFailed",
+  "JWTClaimValidationFailed",
+] as const;
+
+/**
+ * joseライブラリのJWTエラーかどうかを判定する
+ * @param error - エラーオブジェクト
+ * @returns joseのJWTエラーの場合true
+ */
+export function isJoseError(error: unknown): error is Error {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  return (
+    JOSE_ERROR_NAMES.some((name) => error.name === name) ||
+    error.message.includes("signature") ||
+    error.message.includes("Invalid")
+  );
+}
+
+/**
+ * joseエラーをApiErrorに変換する
+ * @param error - joseライブラリのエラー
+ * @returns ApiError（401 UNAUTHORIZED）
+ */
+export function handleJoseError(error: Error): ApiError {
+  if (error.name === "JWTExpired") {
+    return unauthorized("トークンの有効期限が切れています");
+  }
+  return unauthorized("無効なトークンです");
+}

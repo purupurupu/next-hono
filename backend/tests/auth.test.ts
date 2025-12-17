@@ -1,67 +1,13 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { z } from "zod";
-import { ApiError } from "../src/lib/errors";
-import authRoutes from "../src/routes/auth";
+import { createApp } from "../src/lib/app";
+import {
+  authResponseSchema,
+  errorResponseSchema,
+} from "../src/validators/responses";
+import { parseResponse } from "./helpers/response";
 import { clearDatabase } from "./setup";
 
-/** 認証レスポンスのスキーマ */
-const authResponseSchema = z.object({
-  user: z.object({
-    id: z.number(),
-    email: z.string(),
-    name: z.string().nullable(),
-    created_at: z.string(),
-    updated_at: z.string(),
-  }),
-  token: z.string(),
-});
-
-/** エラーレスポンスのスキーマ */
-const errorResponseSchema = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.record(z.string(), z.array(z.string())).optional(),
-  }),
-});
-
-/**
- * JSONレスポンスをZodスキーマでパースする
- * @param response - Fetchレスポンス
- * @param schema - Zodスキーマ
- * @returns パースされたデータ
- */
-async function parseResponse<T extends z.ZodTypeAny>(
-  response: Response,
-  schema: T,
-): Promise<z.infer<T>> {
-  const json: unknown = await response.json();
-  return schema.parse(json);
-}
-
-const app = new Hono();
-
-app.use(
-  "*",
-  cors({
-    origin: ["http://localhost:3000"],
-    credentials: true,
-    exposeHeaders: ["Authorization"],
-  }),
-);
-
-app.route("/auth", authRoutes);
-
-app.onError((err, c) => {
-  if (err instanceof ApiError) {
-    return c.json(err.toJSON(), err.statusCode);
-  }
-  console.error("Test error:", err);
-  const message = err instanceof Error ? err.message : "Unknown error";
-  return c.json({ error: { code: "INTERNAL_ERROR", message } }, 500);
-});
+const app = createApp();
 
 describe("認証API", () => {
   beforeAll(async () => {
