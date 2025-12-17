@@ -5,6 +5,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { getConfig } from "./lib/config";
 import { closeDb } from "./lib/db";
 import { ApiError } from "./lib/errors";
+import authRoutes from "./routes/auth";
 
 const app = new Hono();
 
@@ -25,14 +26,15 @@ app.get("/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// TODO: Add routes
-// app.route('/auth', authRoutes)
+// Routes
+app.route("/auth", authRoutes);
+// TODO: Add API routes
 // app.route('/api/v1', apiRoutes)
 
 // Error handler
 app.onError((err, c) => {
   if (err instanceof ApiError) {
-    return c.json(err.toJSON(), err.status as 400 | 401 | 403 | 404 | 409 | 500);
+    return c.json(err.toJSON(), err.statusCode);
   }
 
   console.error("Unhandled error:", err);
