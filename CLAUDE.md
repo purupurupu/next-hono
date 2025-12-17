@@ -87,24 +87,40 @@ DATABASE_URL=postgres://postgres:password@localhost:5432/todo_next_hono bunx dri
 ```
 backend/
 ├── src/
-│   ├── index.ts              # Entry point, Hono app, middleware
-│   ├── routes/               # HTTP route handlers
-│   ├── services/             # Business logic
-│   ├── repositories/         # Data access layer
+│   ├── index.ts              # Entry point
+│   ├── features/             # Feature-based modules
+│   │   └── auth/             # 認証機能
+│   │       ├── routes.ts     # HTTP route handlers
+│   │       ├── service.ts    # Business logic
+│   │       ├── validators.ts # Zod validation schemas
+│   │       ├── token-schema.ts # JWT payload schema
+│   │       ├── user-repository.ts
+│   │       └── jwt-denylist-repository.ts
+│   ├── shared/               # Cross-feature shared code
+│   │   ├── middleware/       # Auth middleware
+│   │   └── validators/       # Response schemas
 │   ├── models/
 │   │   └── schema.ts         # Drizzle ORM schema (11 tables)
-│   ├── validators/           # Zod validation schemas
-│   ├── middleware/           # Auth middleware
 │   └── lib/
+│       ├── app.ts            # Hono app factory
 │       ├── config.ts         # Environment config (Zod)
+│       ├── constants.ts      # Application constants
+│       ├── container.ts      # Service factory (DI)
 │       ├── db.ts             # Drizzle database connection
-│       ├── errors.ts         # ApiError class
-│       └── response.ts       # Response helpers
+│       ├── errors.ts         # ApiError class, error helpers
+│       ├── response.ts       # Response helpers
+│       ├── type-guards.ts    # Type guard utilities
+│       └── validator.ts      # Zod validator helpers
 ├── drizzle/                  # Migration files
 ├── tests/                    # Vitest tests
 ├── drizzle.config.ts         # Drizzle configuration
 └── package.json
 ```
+
+**Directory Structure Guidelines**:
+- `features/[domain]/` - ドメイン固有のコード（routes, service, repository, validators）
+- `shared/` - 複数featureで共有するコード（単一featureでのみ使用する場合はfeature内に配置）
+- `lib/` - アプリケーションインフラ、ユーティリティ
 
 **Key Dependencies**:
 - Hono (web framework)
