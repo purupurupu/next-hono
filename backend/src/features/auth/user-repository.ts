@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import type { Database } from "../lib/db";
-import { type NewUser, type User, users } from "../models/schema";
+import type { Database } from "../../lib/db";
+import { type NewUser, type User, users } from "../../models/schema";
 
 /**
  * ユーザーリポジトリのインターフェース

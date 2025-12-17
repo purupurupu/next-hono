@@ -1,9 +1,9 @@
 import type { Context, MiddlewareHandler } from "hono";
-import { getAuthService, getUserRepository } from "../lib/container";
-import { handleJoseError, isJoseError, unauthorized } from "../lib/errors";
-import { hasProperties, isRecord } from "../lib/type-guards";
-import type { User } from "../models/schema";
-import type { TokenPayload } from "../validators/token";
+import type { TokenPayload } from "../../features/auth/token-schema";
+import { getAuthService, getUserRepository } from "../../lib/container";
+import { handleJoseError, isJoseError, unauthorized } from "../../lib/errors";
+import { hasProperties, isRecord } from "../../lib/type-guards";
+import type { User } from "../../models/schema";
 
 /** 認証コンテキストのキー */
 const AUTH_CONTEXT_KEY = "auth";

@@ -4,9 +4,9 @@
  * @module lib/container
  */
 
-import { JwtDenylistRepository } from "../repositories/jwt-denylist";
-import { UserRepository } from "../repositories/user";
-import { AuthService } from "../services/auth";
+import { JwtDenylistRepository } from "../features/auth/jwt-denylist-repository";
+import { AuthService } from "../features/auth/service";
+import { UserRepository } from "../features/auth/user-repository";
 import { getDb } from "./db";
 
 /** データベース接続（シングルトン） */

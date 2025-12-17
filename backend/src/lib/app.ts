@@ -7,7 +7,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
-import authRoutes from "../routes/auth";
+import authRoutes from "../features/auth/routes";
 import { ApiError } from "./errors";
 
 /** アプリケーション作成オプション */

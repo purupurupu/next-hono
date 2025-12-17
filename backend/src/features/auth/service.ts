@@ -1,16 +1,13 @@
 import bcrypt from "bcrypt";
 import * as jose from "jose";
 import { v4 as uuidv4 } from "uuid";
-import { getConfig } from "../lib/config";
-import { AUTH } from "../lib/constants";
-import { conflict, unauthorized, validationError } from "../lib/errors";
-import type { User } from "../models/schema";
-import type { JwtDenylistRepositoryInterface } from "../repositories/jwt-denylist";
-import type { UserRepositoryInterface } from "../repositories/user";
-import {
-  type TokenPayload,
-  tokenPayloadSchema,
-} from "../validators/token";
+import { getConfig } from "../../lib/config";
+import { AUTH } from "../../lib/constants";
+import { conflict, unauthorized, validationError } from "../../lib/errors";
+import type { User } from "../../models/schema";
+import type { JwtDenylistRepositoryInterface } from "./jwt-denylist-repository";
+import type { UserRepositoryInterface } from "./user-repository";
+import { type TokenPayload, tokenPayloadSchema } from "./token-schema";
 
 /** 認証レスポンスの型定義 */
 export interface AuthResponse {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VALIDATION } from "../lib/constants";
+import { VALIDATION } from "../../lib/constants";
 
 export const signUpSchema = z
   .object({

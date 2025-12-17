@@ -3,7 +3,7 @@ import { createApp } from "../src/lib/app";
 import {
   authResponseSchema,
   errorResponseSchema,
-} from "../src/validators/responses";
+} from "../src/shared/validators/responses";
 import { parseResponse } from "./helpers/response";
 import { clearDatabase } from "./setup";
 

@@ -1,10 +1,10 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { getAuthService } from "../lib/container";
-import { created, noContent, ok } from "../lib/response";
-import { handleValidationError } from "../lib/validator";
-import { getAuthContext, jwtAuth } from "../middleware/auth";
-import { signInSchema, signUpSchema } from "../validators/auth";
+import { getAuthService } from "../../lib/container";
+import { created, noContent, ok } from "../../lib/response";
+import { handleValidationError } from "../../lib/validator";
+import { getAuthContext, jwtAuth } from "../../shared/middleware/auth";
+import { signInSchema, signUpSchema } from "./validators";
 
 const auth = new Hono();
 
