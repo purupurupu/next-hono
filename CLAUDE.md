@@ -198,6 +198,11 @@ frontend/src/
 3. **Docker**: Rebuild images after dependency changes
 4. **Before PR**: Run `pnpm run lint`, `pnpm run typecheck`, `bun run test`
 
+## TypeScript Guidelines
+
+- **型アサーション（as）は極力使用しない**: 型安全性を維持するため、型アサーションの使用は避ける。代わりに型ガード、ジェネリクス、適切な型定義を使用する。型アサーションが必要な場合は、その理由をコメントで明記する。
+- **TSDocを極力書く**: 関数、クラス、インターフェース、型には`@param`、`@returns`、`@throws`、`@example`などを含むTSDocコメントを記述する。
+
 ## Git Conventions
 
 **コミットメッセージ** (Semantic Commits、日本語):
