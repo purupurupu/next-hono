@@ -3,7 +3,7 @@ import { getAuthService, getUserRepository } from "../lib/container";
 import { unauthorized } from "../lib/errors";
 import { hasProperties, isRecord } from "../lib/type-guards";
 import type { User } from "../models/schema";
-import type { TokenPayload } from "../services/auth";
+import type { TokenPayload } from "../validators/token";
 
 /** 認証コンテキストのキー */
 const AUTH_CONTEXT_KEY = "auth";

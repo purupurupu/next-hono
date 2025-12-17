@@ -17,9 +17,6 @@ const BCRYPT_COST = 12;
 /** JWTの有効期限 */
 const JWT_EXPIRES_IN = "24h";
 
-// TokenPayloadはvalidators/token.tsからre-export
-export type { TokenPayload } from "../validators/token";
-
 /** 認証レスポンスの型定義 */
 export interface AuthResponse {
   /** ユーザー情報 */
