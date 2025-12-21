@@ -8,6 +8,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import authRoutes from "../features/auth/routes";
+import todoRoutes from "../features/todo/routes";
 import { ApiError } from "./errors";
 
 /** アプリケーション作成オプション */
@@ -47,8 +48,11 @@ export function createApp(options: CreateAppOptions = {}): Hono {
 
   // Routes
   app.route("/auth", authRoutes);
-  // TODO: Add API routes
-  // app.route('/api/v1', apiRoutes)
+
+  // API v1 routes
+  const api = new Hono();
+  api.route("/todos", todoRoutes);
+  app.route("/api/v1", api);
 
   // Error handler
   app.onError((err, c) => {
