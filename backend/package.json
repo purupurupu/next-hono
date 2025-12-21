@@ -7,6 +7,7 @@
     "start": "bun run src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target bun",
     "test": "vitest run",
+    "test:docker": "sh -c 'DATABASE_URL=postgres://postgres:password@db_test:5432/todo_next_test bun x vitest run'",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
