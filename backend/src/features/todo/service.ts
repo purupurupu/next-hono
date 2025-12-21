@@ -28,6 +28,11 @@ import type {
 
 /**
  * API入力をDB形式に変換するヘルパー（作成用）
+ *
+ * completed は status から導出される:
+ * - status: "completed" → completed: true
+ * - status: "pending" | "in_progress" → completed: false
+ *
  * @param input - API入力データ
  * @param userId - ユーザーID
  * @param position - 新しいposition値
@@ -57,12 +62,18 @@ function convertCreateInputToDbFormat(
     dueDate: input.due_date ?? null,
     categoryId: input.category_id ?? null,
     position,
-    completed: false,
+    completed: input.status === "completed",
   };
 }
 
 /**
  * API入力をDB形式に変換するヘルパー（更新用）
+ *
+ * completed と status は双方向同期される:
+ * - completed が指定された場合: status も同期（true→completed, false→pending）
+ * - status が指定された場合: completed も同期（completed→true, それ以外→false）
+ * - 両方指定された場合: completed を優先
+ *
  * @param input - 更新入力データ
  * @returns 更新用データ（undefinedのフィールドは除外）
  */
@@ -75,14 +86,24 @@ function convertUpdateInputToDbFormat(input: UpdateTodoInput): TodoUpdateData {
   if (input.description !== undefined) {
     updateData.description = input.description;
   }
+
+  // completed と status の双方向同期
   if (input.completed !== undefined) {
+    // completed が指定された場合は completed を優先
     updateData.completed = input.completed;
+    // status も同期（completed: true → status: completed, false → status: pending）
+    updateData.status = input.completed
+      ? TODO.STATUS_MAP.completed
+      : TODO.STATUS_MAP.pending;
+  } else if (input.status !== undefined) {
+    // status のみ指定された場合
+    updateData.status = TODO.STATUS_MAP[input.status];
+    // completed も同期（status: completed → true, それ以外 → false）
+    updateData.completed = input.status === "completed";
   }
+
   if (input.priority !== undefined) {
     updateData.priority = TODO.PRIORITY_MAP[input.priority];
-  }
-  if (input.status !== undefined) {
-    updateData.status = TODO.STATUS_MAP[input.status];
   }
   if (input.due_date !== undefined) {
     updateData.dueDate = input.due_date;

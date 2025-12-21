@@ -26,6 +26,22 @@ const dueDateSchema = z
   .optional();
 
 /**
+ * 配列の重複をチェックするヘルパー関数
+ * @param arr - チェックする配列
+ * @returns 重複がなければtrue
+ */
+function hasNoDuplicates<T>(arr: T[]): boolean {
+  return new Set(arr).size === arr.length;
+}
+
+/** tag_ids スキーマ（重複チェック付き） */
+const tagIdsSchema = z
+  .array(z.number().int().positive())
+  .refine(hasNoDuplicates, {
+    message: "tag_idsに重複するIDが含まれています",
+  });
+
+/**
  * Todo作成スキーマ
  */
 export const createTodoSchema = z.object({
@@ -46,7 +62,7 @@ export const createTodoSchema = z.object({
   status: statusSchema.optional().default("pending"),
   due_date: dueDateSchema,
   category_id: z.number().int().positive().nullable().optional(),
-  tag_ids: z.array(z.number().int().positive()).optional().default([]),
+  tag_ids: tagIdsSchema.optional().default([]),
 });
 
 /**
@@ -72,7 +88,7 @@ export const updateTodoSchema = z.object({
   status: statusSchema.optional(),
   due_date: dueDateSchema,
   category_id: z.number().int().positive().nullable().optional(),
-  tag_ids: z.array(z.number().int().positive()).optional(),
+  tag_ids: tagIdsSchema.optional(),
 });
 
 /**
@@ -86,7 +102,11 @@ export const updateOrderSchema = z.object({
         position: z.number().int().min(0, { message: "positionは0以上である必要があります" }),
       }),
     )
-    .min(1, { message: "少なくとも1つのTodoを指定してください" }),
+    .min(1, { message: "少なくとも1つのTodoを指定してください" })
+    .refine(
+      (todos) => hasNoDuplicates(todos.map((t) => t.id)),
+      { message: "todosに重複するIDが含まれています" },
+    ),
 });
 
 /**
