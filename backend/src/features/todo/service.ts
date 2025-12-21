@@ -4,13 +4,33 @@
  */
 
 import { TODO } from "../../lib/constants";
-import { forbidden, notFound } from "../../lib/errors";
-import type { CategoryRepositoryInterface } from "./category-repository";
+import type { Database } from "../../lib/db";
+import { notFound } from "../../lib/errors";
+import { TODO_ERROR_MESSAGES } from "../../shared/errors/messages";
+import {
+  validateMultipleOwnership,
+  validateSingleOwnership,
+} from "../../shared/validators/ownership";
+import {
+  CategoryRepository,
+  type CategoryRepositoryInterface,
+} from "./category-repository";
 import type { TagRepositoryInterface } from "./tag-repository";
-import type { TodoRepositoryInterface } from "./todo-repository";
-import type { TodoTagRepositoryInterface } from "./todo-tag-repository";
-import { type TodoResponse, formatTodoResponse } from "./types";
-import type { CreateTodoInput, UpdateOrderInput, UpdateTodoInput } from "./validators";
+import {
+  TodoRepository,
+  type TodoRepositoryInterface,
+} from "./todo-repository";
+import { TodoTagRepository } from "./todo-tag-repository";
+import {
+  type TodoResponse,
+  type TodoUpdateData,
+  formatTodoResponse,
+} from "./types";
+import type {
+  CreateTodoInput,
+  UpdateOrderInput,
+  UpdateTodoInput,
+} from "./validators";
 
 /**
  * Todoサービスクラス
@@ -19,14 +39,14 @@ import type { CreateTodoInput, UpdateOrderInput, UpdateTodoInput } from "./valid
 export class TodoService {
   /**
    * TodoServiceを作成する
+   * @param db - データベースインスタンス
    * @param todoRepository - Todoリポジトリ
-   * @param todoTagRepository - TodoTagリポジトリ
    * @param categoryRepository - カテゴリリポジトリ
    * @param tagRepository - タグリポジトリ
    */
   constructor(
+    private db: Database,
     private todoRepository: TodoRepositoryInterface,
-    private todoTagRepository: TodoTagRepositoryInterface,
     private categoryRepository: CategoryRepositoryInterface,
     private tagRepository: TagRepositoryInterface,
   ) {}
@@ -64,50 +84,57 @@ export class TodoService {
    * @throws ForbiddenError - 他ユーザーのCategory/Tagを使用した場合
    */
   async create(input: CreateTodoInput, userId: number): Promise<TodoResponse> {
-    // カテゴリの所有者検証
+    // カテゴリの所有者検証（トランザクション外で事前検証）
     if (input.category_id) {
       await this.validateCategoryOwnership(input.category_id, userId);
     }
 
-    // タグの所有者検証
+    // タグの所有者検証（トランザクション外で事前検証）
     if (input.tag_ids && input.tag_ids.length > 0) {
       await this.validateTagsOwnership(input.tag_ids, userId);
     }
 
-    // 最大positionを取得
-    const maxPosition = await this.todoRepository.getMaxPosition(userId);
-    const newPosition = maxPosition + 1;
+    // トランザクション内で作成処理を実行
+    return await this.db.transaction(async (tx) => {
+      const txTodoRepo = new TodoRepository(tx);
+      const txTodoTagRepo = new TodoTagRepository(tx);
+      const txCategoryRepo = new CategoryRepository(tx);
 
-    // Todoを作成
-    const todo = await this.todoRepository.create({
-      userId,
-      title: input.title,
-      description: input.description ?? null,
-      priority: TODO.PRIORITY_MAP[input.priority],
-      status: TODO.STATUS_MAP[input.status],
-      dueDate: input.due_date ?? null,
-      categoryId: input.category_id ?? null,
-      position: newPosition,
-      completed: false,
+      // 最大positionを取得
+      const maxPosition = await txTodoRepo.getMaxPosition(userId);
+      const newPosition = maxPosition + 1;
+
+      // Todoを作成
+      const todo = await txTodoRepo.create({
+        userId,
+        title: input.title,
+        description: input.description ?? null,
+        priority: TODO.PRIORITY_MAP[input.priority],
+        status: TODO.STATUS_MAP[input.status],
+        dueDate: input.due_date ?? null,
+        categoryId: input.category_id ?? null,
+        position: newPosition,
+        completed: false,
+      });
+
+      // タグを関連付け
+      if (input.tag_ids && input.tag_ids.length > 0) {
+        await txTodoTagRepo.syncTags(todo.id, input.tag_ids);
+      }
+
+      // カテゴリのカウントを増加
+      if (input.category_id) {
+        await txCategoryRepo.incrementTodosCount(input.category_id);
+      }
+
+      // リレーション付きで再取得
+      const created = await txTodoRepo.findById(todo.id, userId);
+      if (!created) {
+        throw notFound("Todo", todo.id);
+      }
+
+      return formatTodoResponse(created);
     });
-
-    // タグを関連付け
-    if (input.tag_ids && input.tag_ids.length > 0) {
-      await this.todoTagRepository.syncTags(todo.id, input.tag_ids);
-    }
-
-    // カテゴリのカウントを増加
-    if (input.category_id) {
-      await this.categoryRepository.incrementTodosCount(input.category_id);
-    }
-
-    // リレーション付きで再取得
-    const created = await this.todoRepository.findById(todo.id, userId);
-    if (!created) {
-      throw notFound("Todo", todo.id);
-    }
-
-    return formatTodoResponse(created);
   }
 
   /**
@@ -124,7 +151,7 @@ export class TodoService {
     input: UpdateTodoInput,
     userId: number,
   ): Promise<TodoResponse> {
-    // 既存のTodoを取得
+    // 既存のTodoを取得（トランザクション外で事前検証）
     const existing = await this.todoRepository.findById(id, userId);
     if (!existing) {
       throw notFound("Todo", id);
@@ -132,54 +159,66 @@ export class TodoService {
 
     const oldCategoryId = existing.todo.categoryId;
 
-    // 新しいカテゴリの所有者検証
+    // 新しいカテゴリの所有者検証（トランザクション外で事前検証）
     if (input.category_id !== undefined && input.category_id !== null) {
       await this.validateCategoryOwnership(input.category_id, userId);
     }
 
-    // タグの所有者検証
+    // タグの所有者検証（トランザクション外で事前検証）
     if (input.tag_ids !== undefined && input.tag_ids.length > 0) {
       await this.validateTagsOwnership(input.tag_ids, userId);
     }
 
-    // 更新データを構築
-    const updateData: Record<string, unknown> = {};
-    if (input.title !== undefined) updateData.title = input.title;
-    if (input.description !== undefined) updateData.description = input.description;
-    if (input.completed !== undefined) updateData.completed = input.completed;
-    if (input.priority !== undefined) updateData.priority = TODO.PRIORITY_MAP[input.priority];
-    if (input.status !== undefined) updateData.status = TODO.STATUS_MAP[input.status];
-    if (input.due_date !== undefined) updateData.dueDate = input.due_date;
-    if (input.category_id !== undefined) updateData.categoryId = input.category_id;
+    // トランザクション内で更新処理を実行
+    return await this.db.transaction(async (tx) => {
+      const txTodoRepo = new TodoRepository(tx);
+      const txTodoTagRepo = new TodoTagRepository(tx);
+      const txCategoryRepo = new CategoryRepository(tx);
 
-    // Todoを更新
-    if (Object.keys(updateData).length > 0) {
-      await this.todoRepository.update(id, userId, updateData);
-    }
+      // 更新データを構築
+      const updateData: TodoUpdateData = {};
+      if (input.title !== undefined) updateData.title = input.title;
+      if (input.description !== undefined)
+        updateData.description = input.description;
+      if (input.completed !== undefined) updateData.completed = input.completed;
+      if (input.priority !== undefined)
+        updateData.priority = TODO.PRIORITY_MAP[input.priority];
+      if (input.status !== undefined)
+        updateData.status = TODO.STATUS_MAP[input.status];
+      if (input.due_date !== undefined) updateData.dueDate = input.due_date;
+      if (input.category_id !== undefined)
+        updateData.categoryId = input.category_id;
 
-    // タグを同期
-    if (input.tag_ids !== undefined) {
-      await this.todoTagRepository.syncTags(id, input.tag_ids);
-    }
-
-    // カテゴリのカウントを更新
-    const newCategoryId = input.category_id !== undefined ? input.category_id : oldCategoryId;
-    if (oldCategoryId !== newCategoryId) {
-      if (oldCategoryId) {
-        await this.categoryRepository.decrementTodosCount(oldCategoryId);
+      // Todoを更新
+      if (Object.keys(updateData).length > 0) {
+        await txTodoRepo.update(id, userId, updateData);
       }
-      if (newCategoryId) {
-        await this.categoryRepository.incrementTodosCount(newCategoryId);
+
+      // タグを同期
+      if (input.tag_ids !== undefined) {
+        await txTodoTagRepo.syncTags(id, input.tag_ids);
       }
-    }
 
-    // リレーション付きで再取得
-    const updated = await this.todoRepository.findById(id, userId);
-    if (!updated) {
-      throw notFound("Todo", id);
-    }
+      // カテゴリのカウントを更新
+      const newCategoryId =
+        input.category_id !== undefined ? input.category_id : oldCategoryId;
+      if (oldCategoryId !== newCategoryId) {
+        if (oldCategoryId) {
+          await txCategoryRepo.decrementTodosCount(oldCategoryId);
+        }
+        if (newCategoryId) {
+          await txCategoryRepo.incrementTodosCount(newCategoryId);
+        }
+      }
 
-    return formatTodoResponse(updated);
+      // リレーション付きで再取得
+      const updated = await txTodoRepo.findById(id, userId);
+      if (!updated) {
+        throw notFound("Todo", id);
+      }
+
+      return formatTodoResponse(updated);
+    });
   }
 
   /**
@@ -189,7 +228,7 @@ export class TodoService {
    * @throws NotFoundError - Todoが見つからない場合
    */
   async destroy(id: number, userId: number): Promise<void> {
-    // 既存のTodoを取得
+    // 既存のTodoを取得（トランザクション外で事前検証）
     const existing = await this.todoRepository.findById(id, userId);
     if (!existing) {
       throw notFound("Todo", id);
@@ -197,13 +236,19 @@ export class TodoService {
 
     const categoryId = existing.todo.categoryId;
 
-    // Todoを削除（todo_tagsはカスケード削除される）
-    await this.todoRepository.delete(id, userId);
+    // トランザクション内で削除処理を実行
+    await this.db.transaction(async (tx) => {
+      const txTodoRepo = new TodoRepository(tx);
+      const txCategoryRepo = new CategoryRepository(tx);
 
-    // カテゴリのカウントを減少
-    if (categoryId) {
-      await this.categoryRepository.decrementTodosCount(categoryId);
-    }
+      // Todoを削除（todo_tagsはカスケード削除される）
+      await txTodoRepo.delete(id, userId);
+
+      // カテゴリのカウントを減少
+      if (categoryId) {
+        await txCategoryRepo.decrementTodosCount(categoryId);
+      }
+    });
   }
 
   /**
@@ -216,10 +261,12 @@ export class TodoService {
     const todoIds = input.todos.map((t) => t.id);
 
     // 全てのTodoがこのユーザーのものか検証
-    const existingTodos = await this.todoRepository.findByIds(todoIds, userId);
-    if (existingTodos.length !== todoIds.length) {
-      throw forbidden("更新できないTodoが含まれています");
-    }
+    await validateMultipleOwnership(
+      todoIds,
+      userId,
+      this.todoRepository,
+      TODO_ERROR_MESSAGES.ORDER_FORBIDDEN,
+    );
 
     // positionを一括更新
     await this.todoRepository.updatePositions(input.todos, userId);
@@ -235,10 +282,12 @@ export class TodoService {
     categoryId: number,
     userId: number,
   ): Promise<void> {
-    const category = await this.categoryRepository.findById(categoryId, userId);
-    if (!category) {
-      throw forbidden("指定されたカテゴリは使用できません");
-    }
+    await validateSingleOwnership(
+      categoryId,
+      userId,
+      this.categoryRepository,
+      TODO_ERROR_MESSAGES.CATEGORY_FORBIDDEN,
+    );
   }
 
   /**
@@ -251,9 +300,11 @@ export class TodoService {
     tagIds: number[],
     userId: number,
   ): Promise<void> {
-    const tags = await this.tagRepository.findByIds(tagIds, userId);
-    if (tags.length !== tagIds.length) {
-      throw forbidden("指定されたタグの一部が使用できません");
-    }
+    await validateMultipleOwnership(
+      tagIds,
+      userId,
+      this.tagRepository,
+      TODO_ERROR_MESSAGES.TAGS_FORBIDDEN,
+    );
   }
 }
