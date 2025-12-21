@@ -48,6 +48,18 @@ export function getAuthService(): AuthService {
 
 /**
  * トランザクション対応リポジトリのファクトリ型
+ *
+ * Drizzleではトランザクション内の操作にはトランザクションオブジェクト(tx)を
+ * 使用する必要がある。通常のdb接続を使うとトランザクション外の操作になるため、
+ * トランザクション内で新しいリポジトリインスタンスを作成するためのファクトリを提供する。
+ *
+ * @example
+ * ```typescript
+ * await this.db.transaction(async (tx) => {
+ *   const txTodoRepo = this.factories.createTodoRepository(tx);
+ *   // txTodoRepoの操作は全て同一トランザクション内で実行される
+ * });
+ * ```
  */
 export interface RepositoryFactories {
   /** TodoRepositoryを作成する */
@@ -75,6 +87,11 @@ export function getRepositoryFactories(): RepositoryFactories {
 
 /**
  * TodoServiceのインスタンスを取得する
+ *
+ * 直接渡すリポジトリとファクトリの両方を渡す理由:
+ * - 直接渡すリポジトリ: 通常の読み取り操作用（インスタンス再利用でオーバーヘッド削減）
+ * - ファクトリ: トランザクション内で新しいリポジトリを作成するため
+ *
  * @returns TodoServiceインスタンス
  */
 export function getTodoService(): TodoService {
