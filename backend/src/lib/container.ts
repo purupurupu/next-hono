@@ -11,59 +11,35 @@ import { CategoryRepository } from "../features/todo/category-repository";
 import { TodoService } from "../features/todo/service";
 import { TagRepository } from "../features/todo/tag-repository";
 import { TodoRepository } from "../features/todo/todo-repository";
-import { getDb } from "./db";
+import { TodoTagRepository } from "../features/todo/todo-tag-repository";
+import { type DatabaseOrTransaction, getDb } from "./db";
 
-/** データベース接続（シングルトン） */
-const db = getDb();
-
-// シングルトンインスタンス（Auth関連）
-let authServiceInstance: AuthService | null = null;
-let userRepositoryInstance: UserRepository | null = null;
-let jwtDenylistRepositoryInstance: JwtDenylistRepository | null = null;
+// ============================================
+// Auth Feature
+// ============================================
 
 /**
- * AuthServiceのインスタンスを取得する（シングルトン）
- * @returns AuthServiceインスタンス
- */
-export function getAuthService(): AuthService {
-  if (!authServiceInstance) {
-    authServiceInstance = new AuthService(
-      getUserRepository(),
-      getJwtDenylistRepository(),
-    );
-  }
-  return authServiceInstance;
-}
-
-/**
- * UserRepositoryのインスタンスを取得する（シングルトン）
+ * UserRepositoryのインスタンスを取得する
  * @returns UserRepositoryインスタンス
  */
 export function getUserRepository(): UserRepository {
-  if (!userRepositoryInstance) {
-    userRepositoryInstance = new UserRepository(db);
-  }
-  return userRepositoryInstance;
+  return new UserRepository(getDb());
 }
 
 /**
- * JwtDenylistRepositoryのインスタンスを取得する（シングルトン）
+ * JwtDenylistRepositoryのインスタンスを取得する
  * @returns JwtDenylistRepositoryインスタンス
  */
 export function getJwtDenylistRepository(): JwtDenylistRepository {
-  if (!jwtDenylistRepositoryInstance) {
-    jwtDenylistRepositoryInstance = new JwtDenylistRepository(db);
-  }
-  return jwtDenylistRepositoryInstance;
+  return new JwtDenylistRepository(getDb());
 }
 
 /**
- * シングルトンインスタンスをリセットする（テスト用）
+ * AuthServiceのインスタンスを取得する
+ * @returns AuthServiceインスタンス
  */
-export function resetSingletons(): void {
-  authServiceInstance = null;
-  userRepositoryInstance = null;
-  jwtDenylistRepositoryInstance = null;
+export function getAuthService(): AuthService {
+  return new AuthService(getUserRepository(), getJwtDenylistRepository());
 }
 
 // ============================================
@@ -71,38 +47,43 @@ export function resetSingletons(): void {
 // ============================================
 
 /**
+ * トランザクション対応リポジトリのファクトリ型
+ */
+export interface RepositoryFactories {
+  /** TodoRepositoryを作成する */
+  createTodoRepository: (db: DatabaseOrTransaction) => TodoRepository;
+  /** CategoryRepositoryを作成する */
+  createCategoryRepository: (db: DatabaseOrTransaction) => CategoryRepository;
+  /** TagRepositoryを作成する */
+  createTagRepository: (db: DatabaseOrTransaction) => TagRepository;
+  /** TodoTagRepositoryを作成する */
+  createTodoTagRepository: (db: DatabaseOrTransaction) => TodoTagRepository;
+}
+
+/**
+ * デフォルトのリポジトリファクトリを取得する
+ * @returns リポジトリファクトリオブジェクト
+ */
+export function getRepositoryFactories(): RepositoryFactories {
+  return {
+    createTodoRepository: (db) => new TodoRepository(db),
+    createCategoryRepository: (db) => new CategoryRepository(db),
+    createTagRepository: (db) => new TagRepository(db),
+    createTodoTagRepository: (db) => new TodoTagRepository(db),
+  };
+}
+
+/**
  * TodoServiceのインスタンスを取得する
  * @returns TodoServiceインスタンス
  */
 export function getTodoService(): TodoService {
+  const db = getDb();
   return new TodoService(
     db,
     new TodoRepository(db),
     new CategoryRepository(db),
     new TagRepository(db),
+    getRepositoryFactories(),
   );
-}
-
-/**
- * TodoRepositoryのインスタンスを取得する
- * @returns TodoRepositoryインスタンス
- */
-export function getTodoRepository(): TodoRepository {
-  return new TodoRepository(db);
-}
-
-/**
- * CategoryRepositoryのインスタンスを取得する
- * @returns CategoryRepositoryインスタンス
- */
-export function getCategoryRepository(): CategoryRepository {
-  return new CategoryRepository(db);
-}
-
-/**
- * TagRepositoryのインスタンスを取得する
- * @returns TagRepositoryインスタンス
- */
-export function getTagRepository(): TagRepository {
-  return new TagRepository(db);
 }

@@ -4,6 +4,7 @@
  */
 
 import { TODO } from "../../lib/constants";
+import type { RepositoryFactories } from "../../lib/container";
 import type { Database } from "../../lib/db";
 import { notFound } from "../../lib/errors";
 import { TODO_ERROR_MESSAGES } from "../../shared/errors/messages";
@@ -11,16 +12,9 @@ import {
   validateMultipleOwnership,
   validateSingleOwnership,
 } from "../../shared/validators/ownership";
-import {
-  CategoryRepository,
-  type CategoryRepositoryInterface,
-} from "./category-repository";
+import type { CategoryRepositoryInterface } from "./category-repository";
 import type { TagRepositoryInterface } from "./tag-repository";
-import {
-  TodoRepository,
-  type TodoRepositoryInterface,
-} from "./todo-repository";
-import { TodoTagRepository } from "./todo-tag-repository";
+import type { TodoRepositoryInterface } from "./todo-repository";
 import {
   type TodoResponse,
   type TodoUpdateData,
@@ -33,6 +27,74 @@ import type {
 } from "./validators";
 
 /**
+ * API入力をDB形式に変換するヘルパー（作成用）
+ * @param input - API入力データ
+ * @param userId - ユーザーID
+ * @param position - 新しいposition値
+ * @returns DB保存形式のデータ
+ */
+function convertCreateInputToDbFormat(
+  input: CreateTodoInput,
+  userId: number,
+  position: number,
+): {
+  userId: number;
+  title: string;
+  description: string | null;
+  priority: number;
+  status: number;
+  dueDate: string | null;
+  categoryId: number | null;
+  position: number;
+  completed: boolean;
+} {
+  return {
+    userId,
+    title: input.title,
+    description: input.description ?? null,
+    priority: TODO.PRIORITY_MAP[input.priority],
+    status: TODO.STATUS_MAP[input.status],
+    dueDate: input.due_date ?? null,
+    categoryId: input.category_id ?? null,
+    position,
+    completed: false,
+  };
+}
+
+/**
+ * API入力をDB形式に変換するヘルパー（更新用）
+ * @param input - 更新入力データ
+ * @returns 更新用データ（undefinedのフィールドは除外）
+ */
+function convertUpdateInputToDbFormat(input: UpdateTodoInput): TodoUpdateData {
+  const updateData: TodoUpdateData = {};
+
+  if (input.title !== undefined) {
+    updateData.title = input.title;
+  }
+  if (input.description !== undefined) {
+    updateData.description = input.description;
+  }
+  if (input.completed !== undefined) {
+    updateData.completed = input.completed;
+  }
+  if (input.priority !== undefined) {
+    updateData.priority = TODO.PRIORITY_MAP[input.priority];
+  }
+  if (input.status !== undefined) {
+    updateData.status = TODO.STATUS_MAP[input.status];
+  }
+  if (input.due_date !== undefined) {
+    updateData.dueDate = input.due_date;
+  }
+  if (input.category_id !== undefined) {
+    updateData.categoryId = input.category_id;
+  }
+
+  return updateData;
+}
+
+/**
  * Todoサービスクラス
  * Todo関連のビジネスロジックを提供する
  */
@@ -43,12 +105,14 @@ export class TodoService {
    * @param todoRepository - Todoリポジトリ
    * @param categoryRepository - カテゴリリポジトリ
    * @param tagRepository - タグリポジトリ
+   * @param factories - トランザクション用リポジトリファクトリ
    */
   constructor(
     private db: Database,
     private todoRepository: TodoRepositoryInterface,
     private categoryRepository: CategoryRepositoryInterface,
     private tagRepository: TagRepositoryInterface,
+    private factories: RepositoryFactories,
   ) {}
 
   /**
@@ -96,26 +160,17 @@ export class TodoService {
 
     // トランザクション内で作成処理を実行
     return await this.db.transaction(async (tx) => {
-      const txTodoRepo = new TodoRepository(tx);
-      const txTodoTagRepo = new TodoTagRepository(tx);
-      const txCategoryRepo = new CategoryRepository(tx);
+      const txTodoRepo = this.factories.createTodoRepository(tx);
+      const txTodoTagRepo = this.factories.createTodoTagRepository(tx);
+      const txCategoryRepo = this.factories.createCategoryRepository(tx);
 
       // 最大positionを取得
       const maxPosition = await txTodoRepo.getMaxPosition(userId);
       const newPosition = maxPosition + 1;
 
-      // Todoを作成
-      const todo = await txTodoRepo.create({
-        userId,
-        title: input.title,
-        description: input.description ?? null,
-        priority: TODO.PRIORITY_MAP[input.priority],
-        status: TODO.STATUS_MAP[input.status],
-        dueDate: input.due_date ?? null,
-        categoryId: input.category_id ?? null,
-        position: newPosition,
-        completed: false,
-      });
+      // 入力をDB形式に変換してTodoを作成
+      const todoData = convertCreateInputToDbFormat(input, userId, newPosition);
+      const todo = await txTodoRepo.create(todoData);
 
       // タグを関連付け
       if (input.tag_ids && input.tag_ids.length > 0) {
@@ -171,23 +226,12 @@ export class TodoService {
 
     // トランザクション内で更新処理を実行
     return await this.db.transaction(async (tx) => {
-      const txTodoRepo = new TodoRepository(tx);
-      const txTodoTagRepo = new TodoTagRepository(tx);
-      const txCategoryRepo = new CategoryRepository(tx);
+      const txTodoRepo = this.factories.createTodoRepository(tx);
+      const txTodoTagRepo = this.factories.createTodoTagRepository(tx);
+      const txCategoryRepo = this.factories.createCategoryRepository(tx);
 
-      // 更新データを構築
-      const updateData: TodoUpdateData = {};
-      if (input.title !== undefined) updateData.title = input.title;
-      if (input.description !== undefined)
-        updateData.description = input.description;
-      if (input.completed !== undefined) updateData.completed = input.completed;
-      if (input.priority !== undefined)
-        updateData.priority = TODO.PRIORITY_MAP[input.priority];
-      if (input.status !== undefined)
-        updateData.status = TODO.STATUS_MAP[input.status];
-      if (input.due_date !== undefined) updateData.dueDate = input.due_date;
-      if (input.category_id !== undefined)
-        updateData.categoryId = input.category_id;
+      // 入力をDB形式に変換
+      const updateData = convertUpdateInputToDbFormat(input);
 
       // Todoを更新
       if (Object.keys(updateData).length > 0) {
@@ -238,8 +282,8 @@ export class TodoService {
 
     // トランザクション内で削除処理を実行
     await this.db.transaction(async (tx) => {
-      const txTodoRepo = new TodoRepository(tx);
-      const txCategoryRepo = new CategoryRepository(tx);
+      const txTodoRepo = this.factories.createTodoRepository(tx);
+      const txCategoryRepo = this.factories.createCategoryRepository(tx);
 
       // Todoを削除（todo_tagsはカスケード削除される）
       await txTodoRepo.delete(id, userId);
