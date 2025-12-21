@@ -4,7 +4,7 @@
  */
 
 import { and, eq, inArray } from "drizzle-orm";
-import type { Database } from "../../lib/db";
+import type { DatabaseOrTransaction } from "../../lib/db";
 import { type Tag, tags } from "../../models/schema";
 
 /**
@@ -27,9 +27,9 @@ export interface TagRepositoryInterface {
 export class TagRepository implements TagRepositoryInterface {
   /**
    * TagRepositoryを作成する
-   * @param db - Drizzleデータベースインスタンス
+   * @param db - Drizzleデータベースまたはトランザクションインスタンス
    */
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseOrTransaction) {}
 
   /**
    * 複数のIDとユーザーIDでタグを検索する

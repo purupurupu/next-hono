@@ -4,7 +4,7 @@
  */
 
 import { and, asc, eq, inArray, max } from "drizzle-orm";
-import type { Database } from "../../lib/db";
+import type { DatabaseOrTransaction } from "../../lib/db";
 import {
   type Category,
   type NewTodo,
@@ -96,9 +96,9 @@ export interface TodoRepositoryInterface {
 export class TodoRepository implements TodoRepositoryInterface {
   /**
    * TodoRepositoryを作成する
-   * @param db - Drizzleデータベースインスタンス
+   * @param db - Drizzleデータベースまたはトランザクションインスタンス
    */
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseOrTransaction) {}
 
   /**
    * ユーザーのTodo一覧を取得する（position順）
@@ -172,29 +172,23 @@ export class TodoRepository implements TodoRepositoryInterface {
    * @returns TodoWithRelations、または見つからない場合はundefined
    */
   async findById(id: number, userId: number): Promise<TodoWithRelations | undefined> {
+    // TodoとカテゴリをLEFT JOINで同時取得（1クエリ）
     const result = await this.db
-      .select()
+      .select({
+        todo: todos,
+        category: categories,
+      })
       .from(todos)
+      .leftJoin(categories, eq(todos.categoryId, categories.id))
       .where(and(eq(todos.id, id), eq(todos.userId, userId)))
       .limit(1);
 
-    const todo = result[0];
-    if (!todo) {
+    const row = result[0];
+    if (!row) {
       return undefined;
     }
 
-    // カテゴリを取得
-    let category: Category | null = null;
-    if (todo.categoryId) {
-      const categoryResult = await this.db
-        .select()
-        .from(categories)
-        .where(eq(categories.id, todo.categoryId))
-        .limit(1);
-      category = categoryResult[0] ?? null;
-    }
-
-    // タグを取得
+    // タグを取得（1クエリ）
     const tagResults = await this.db
       .select({
         tag: tags,
@@ -204,8 +198,8 @@ export class TodoRepository implements TodoRepositoryInterface {
       .where(eq(todoTags.todoId, id));
 
     return {
-      todo,
-      category,
+      todo: row.todo,
+      category: row.category,
       tags: tagResults.map((r) => r.tag),
     };
   }

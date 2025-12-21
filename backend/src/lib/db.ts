@@ -1,4 +1,7 @@
+import type { ExtractTablesWithRelations } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
+import type { PgTransaction } from "drizzle-orm/pg-core";
+import type { PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../models/schema";
 import { getConfig } from "./config";
@@ -28,4 +31,15 @@ export async function closeDb() {
   }
 }
 
+/** データベース接続型 */
 export type Database = ReturnType<typeof getDb>;
+
+/** トランザクション型 */
+export type Transaction = PgTransaction<
+  PostgresJsQueryResultHKT,
+  typeof schema,
+  ExtractTablesWithRelations<typeof schema>
+>;
+
+/** データベースまたはトランザクション型（リポジトリで使用） */
+export type DatabaseOrTransaction = Database | Transaction;

@@ -4,7 +4,7 @@
  */
 
 import { eq } from "drizzle-orm";
-import type { Database } from "../../lib/db";
+import type { DatabaseOrTransaction } from "../../lib/db";
 import { todoTags } from "../../models/schema";
 
 /**
@@ -31,9 +31,9 @@ export interface TodoTagRepositoryInterface {
 export class TodoTagRepository implements TodoTagRepositoryInterface {
   /**
    * TodoTagRepositoryを作成する
-   * @param db - Drizzleデータベースインスタンス
+   * @param db - Drizzleデータベースまたはトランザクションインスタンス
    */
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseOrTransaction) {}
 
   /**
    * Todoのタグを同期する（既存のタグを削除して新しいタグを挿入）

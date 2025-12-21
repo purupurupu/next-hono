@@ -4,7 +4,7 @@
  */
 
 import { and, eq, sql } from "drizzle-orm";
-import type { Database } from "../../lib/db";
+import type { DatabaseOrTransaction } from "../../lib/db";
 import { type Category, categories } from "../../models/schema";
 
 /**
@@ -39,9 +39,9 @@ export interface CategoryRepositoryInterface {
 export class CategoryRepository implements CategoryRepositoryInterface {
   /**
    * CategoryRepositoryを作成する
-   * @param db - Drizzleデータベースインスタンス
+   * @param db - Drizzleデータベースまたはトランザクションインスタンス
    */
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseOrTransaction) {}
 
   /**
    * IDとユーザーIDでカテゴリを検索する
