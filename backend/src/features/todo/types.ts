@@ -5,39 +5,21 @@
 
 import { TODO } from "../../lib/constants";
 import type { Category, NewTodo, Tag, Todo } from "../../models/schema";
+import type {
+  CategoryRef,
+  TagRef,
+  TodoResponse,
+} from "../../shared/validators/responses";
+
+// 型はresponses.tsから再エクスポート
+export type {
+  CategoryRef,
+  TagRef,
+  TodoResponse,
+} from "../../shared/validators/responses";
 
 /** Todo更新データ型（userIdを除く部分更新用） */
 export type TodoUpdateData = Partial<Omit<NewTodo, "userId">>;
-
-/** カテゴリ参照（TodoレスポンスのネストされたCategory） */
-export interface CategoryRef {
-  id: number;
-  name: string;
-  color: string;
-}
-
-/** タグ参照（TodoレスポンスのネストされたTag） */
-export interface TagRef {
-  id: number;
-  name: string;
-  color: string | null;
-}
-
-/** Todoレスポンス型（APIが返す形式） */
-export interface TodoResponse {
-  id: number;
-  title: string;
-  completed: boolean;
-  position: number;
-  due_date: string | null;
-  priority: "low" | "medium" | "high";
-  status: "pending" | "in_progress" | "completed";
-  description: string | null;
-  category: CategoryRef | null;
-  tags: TagRef[];
-  created_at: string;
-  updated_at: string;
-}
 
 /** DBから取得したTodoとリレーション */
 export interface TodoWithRelations {

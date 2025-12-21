@@ -4,23 +4,10 @@
  */
 
 import type { User } from "../../models/schema";
+import type { UserResponse } from "../../shared/validators/responses";
 
-/** ユーザーレスポンス型（APIが返すユーザー情報） */
-export interface UserResponse {
-  id: number;
-  email: string;
-  name: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/** 認証レスポンスの型定義 */
-export interface AuthResponse {
-  /** ユーザー情報 */
-  user: UserResponse;
-  /** 認証トークン */
-  token: string;
-}
+// 型はresponses.tsから再エクスポート
+export type { AuthResponse, UserResponse } from "../../shared/validators/responses";
 
 /**
  * ユーザーをレスポンス形式にフォーマットする
