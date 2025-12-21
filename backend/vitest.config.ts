@@ -5,6 +5,11 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["tests/**/*.test.ts"],
+    // テストを順次実行（DB競合を防ぐ）
+    fileParallelism: false,
+    sequence: {
+      concurrent: false,
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

@@ -21,7 +21,7 @@ describe("Todo API", () => {
    * ユーザーを作成してトークンを取得
    */
   async function createTestUser(
-    email = "test@example.com",
+    email = "todo-test@example.com",
   ): Promise<{ token: string; userId: number }> {
     const response = await app.request("/auth/sign_up", {
       method: "POST",
@@ -151,7 +151,7 @@ describe("Todo API", () => {
 
     it("正常系: 他ユーザーのTodoは含まれない", async () => {
       // 別ユーザーを作成してTodoを追加
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       await app.request("/api/v1/todos", {
         method: "POST",
         headers: {
@@ -256,7 +256,7 @@ describe("Todo API", () => {
     });
 
     it("異常系: 他ユーザーのTodoで404エラー", async () => {
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       const createResponse = await app.request("/api/v1/todos", {
         method: "POST",
         headers: {
@@ -374,7 +374,7 @@ describe("Todo API", () => {
     });
 
     it("異常系: 他ユーザーのCategoryで403エラー", async () => {
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       const otherCategoryId = await createTestCategory(
         otherUser.userId,
         "Other Category",
@@ -398,7 +398,7 @@ describe("Todo API", () => {
     });
 
     it("異常系: 他ユーザーのTagで403エラー", async () => {
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       const otherTagId = await createTestTag(otherUser.userId, "Other Tag");
 
       const response = await app.request("/api/v1/todos", {
@@ -516,7 +516,7 @@ describe("Todo API", () => {
     });
 
     it("異常系: 他ユーザーのTodoで404エラー", async () => {
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       const createResponse = await app.request("/api/v1/todos", {
         method: "POST",
         headers: {
@@ -583,7 +583,7 @@ describe("Todo API", () => {
     });
 
     it("異常系: 他ユーザーのTodoで404エラー", async () => {
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       const createResponse = await app.request("/api/v1/todos", {
         method: "POST",
         headers: {
@@ -670,7 +670,7 @@ describe("Todo API", () => {
     });
 
     it("異常系: 他ユーザーのTodo含むと403エラー", async () => {
-      const otherUser = await createTestUser("other@example.com");
+      const otherUser = await createTestUser("todo-other@example.com");
       const otherTodoRes = await app.request("/api/v1/todos", {
         method: "POST",
         headers: {
