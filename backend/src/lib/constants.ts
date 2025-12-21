@@ -9,8 +9,6 @@ export const AUTH = {
   BCRYPT_COST: 12,
   /** JWTの有効期限 */
   JWT_EXPIRES_IN: "24h",
-  /** JWTアルゴリズム */
-  JWT_ALGORITHM: "HS256",
 } as const;
 
 /** バリデーション関連の定数 */

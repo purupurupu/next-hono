@@ -40,13 +40,3 @@ export function created<T>(c: Context, data: T) {
 export function noContent(c: Context) {
   return c.body(null, 204);
 }
-
-export function formatDate(date: Date | null): string | null {
-  if (!date) return null;
-  return date.toISOString();
-}
-
-export function formatDateOnly(date: Date | null): string | null {
-  if (!date) return null;
-  return date.toISOString().split("T")[0];
-}
