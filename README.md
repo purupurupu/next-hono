@@ -1,4 +1,4 @@
-# Next.js + Go Todo Application
+# Next.js + Hono Todo Application
 
 Full-stack Todoアプリケーション with JWT認証
 
@@ -7,9 +7,10 @@ Full-stack Todoアプリケーション with JWT認証
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS v4 |
-| Backend | Go 1.25, Echo v4, GORM |
+| Backend | Hono, Bun, Drizzle ORM, TypeScript |
 | Database | PostgreSQL 15 |
 | Cache | Redis 7 |
+| Storage | RustFS (S3互換) |
 | Infrastructure | Docker Compose |
 
 ## Prerequisites
@@ -23,7 +24,7 @@ Full-stack Todoアプリケーション with JWT認証
 
 ```bash
 git clone <repository-url>
-cd next-go
+cd next-hono
 ```
 
 ### 2. 環境変数を設定
@@ -35,7 +36,7 @@ cp .env.example .env
 `.env` を編集（本番環境では必ず `JWT_SECRET` を変更）:
 
 ```env
-POSTGRES_DB=todo_next
+POSTGRES_DB=todo_next_hono
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 JWT_SECRET=your-super-secret-key-change-in-production
@@ -52,42 +53,6 @@ docker compose up -d
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - Health Check: http://localhost:3001/health
-
-## Local Development（mise）
-
-Dockerを使わずローカルで開発する場合：
-
-```bash
-# miseのインストール（未インストールの場合）
-curl https://mise.run | sh
-
-# Node.jsのGPG公開鍵をインポート（初回のみ）
-gpg --keyserver hkps://keys.openpgp.org --recv-keys 86C8D74642E67846F8E120284DAA80D1E737BC9F
-
-# ツールのインストール
-mise trust
-mise install
-
-# バージョン確認
-go version   # go1.25.5
-node -v      # v24.12.0
-```
-
-### Cursor / VS Code で mise を認識させる
-
-Cursor や VS Code が mise で管理している Go を認識しない場合、`.vscode/settings.json` に以下を追加：
-
-```json
-{
-    "go.gopath": "/Users/<your-username>/go",
-    "go.goroot": "/Users/<your-username>/.local/share/mise/installs/go/1.25.5",
-    "go.alternateTools": {
-        "go": "/Users/<your-username>/.local/share/mise/installs/go/1.25.5/bin/go"
-    }
-}
-```
-
-パスは `mise which go` で確認できます。
 
 ## Development Commands
 
@@ -109,7 +74,7 @@ docker compose build backend
 docker compose build frontend
 ```
 
-### Frontend
+### Frontend (pnpm)
 
 ```bash
 docker compose exec frontend pnpm run dev        # 開発サーバー
@@ -118,11 +83,21 @@ docker compose exec frontend pnpm run lint       # Lint
 docker compose exec frontend pnpm run typecheck  # 型チェック
 ```
 
-### Backend
+### Backend (Bun)
 
 ```bash
-docker compose exec backend go build -o bin/api cmd/api/main.go  # ビルド
-docker compose exec backend go fmt ./...         # フォーマット
+docker compose exec backend bun run dev          # 開発サーバー（ホットリロード）
+docker compose exec backend bun run typecheck    # 型チェック
+docker compose exec backend bun run lint         # Biome lint
+docker compose exec backend bun run lint:fix     # Biome lint（自動修正）
+```
+
+### Database
+
+```bash
+docker compose exec backend bun run db:generate  # マイグレーション生成
+docker compose exec backend bun run db:push      # スキーマをDBに適用
+docker compose exec backend bun run db:studio    # Drizzle Studio起動
 ```
 
 ### テスト
@@ -131,36 +106,17 @@ docker compose exec backend go fmt ./...         # フォーマット
 # テスト用DBを起動
 docker compose up -d db_test
 
-# テスト実行（コンテナ内）
-docker compose exec backend go test -v ./...
+# テスト実行
+docker compose exec backend bun run test
 
-# 特定のパッケージのみ
-docker compose exec backend go test -v ./internal/handler/...
-```
+# ウォッチモード
+docker compose exec backend bun run test:watch
 
-#### `./...` とは？
+# 単一テストファイル
+docker compose exec backend bun run test tests/auth.test.ts
 
-Goのパッケージパス指定の構文です。
-
-| パス | 意味 |
-|-----|------|
-| `./` | 現在のディレクトリ |
-| `...` | このディレクトリ以下すべて（ワイルドカード） |
-
-```bash
-go test ./...                    # すべてのパッケージ
-go test ./internal/handler/...   # handler以下すべて
-go test ./internal/handler       # handlerのみ（サブディレクトリ除く）
-```
-
-#### ローカルでテスト実行
-
-Dockerコンテナを経由せずローカルで実行する場合は、環境変数でDB接続先を指定：
-
-```bash
-cd backend
-TEST_DATABASE_URL="host=localhost user=postgres password=password dbname=todo_next_test port=5433 sslmode=disable" \
-  go test -v ./...
+# 特定のテストケース
+docker compose exec backend bun run test -t "should create todo"
 ```
 
 ## Project Structure
@@ -168,7 +124,7 @@ TEST_DATABASE_URL="host=localhost user=postgres password=password dbname=todo_ne
 ```
 .
 ├── frontend/          # Next.js アプリケーション
-├── backend/           # Go API サーバー
+├── backend/           # Hono API サーバー
 ├── docs/              # 詳細ドキュメント
 ├── compose.yml        # Docker Compose 設定
 ├── .mise.toml         # mise バージョン管理
@@ -177,11 +133,10 @@ TEST_DATABASE_URL="host=localhost user=postgres password=password dbname=todo_ne
 
 ## Documentation
 
-詳細なドキュメントは [docs/](./docs/) を参照してください：
+詳細なドキュメントは以下を参照してください：
 
-- [Architecture](./docs/architecture/) - システム設計
-- [API Documentation](./docs/api/) - API仕様
-- [Development Guide](./docs/guides/) - 開発ガイドライン
+- [CLAUDE.md](./CLAUDE.md) - Claude Code用の詳細なアーキテクチャガイド
+- [docs/](./docs/) - API仕様、移行ガイド、データベーススキーマ
 
 ## License
 
