@@ -6,22 +6,12 @@ import { AUTH } from "../../lib/constants";
 import { conflict, unauthorized, validationError } from "../../lib/errors";
 import type { User } from "../../models/schema";
 import type { JwtDenylistRepositoryInterface } from "./jwt-denylist-repository";
-import type { UserRepositoryInterface } from "./user-repository";
 import { type TokenPayload, tokenPayloadSchema } from "./token-schema";
+import { type AuthResponse, formatUser } from "./types";
+import type { UserRepositoryInterface } from "./user-repository";
 
-/** 認証レスポンスの型定義 */
-export interface AuthResponse {
-  /** ユーザー情報 */
-  user: {
-    id: number;
-    email: string;
-    name: string | null;
-    created_at: string;
-    updated_at: string;
-  };
-  /** 認証トークン */
-  token: string;
-}
+// AuthResponseをre-export（後方互換性のため）
+export type { AuthResponse } from "./types";
 
 /**
  * 認証サービスクラス
@@ -76,7 +66,7 @@ export class AuthService {
     const token = await this.generateToken(user);
 
     return {
-      user: this.formatUser(user),
+      user: formatUser(user),
       token,
     };
   }
@@ -102,7 +92,7 @@ export class AuthService {
     const token = await this.generateToken(user);
 
     return {
-      user: this.formatUser(user),
+      user: formatUser(user),
       token,
     };
   }
@@ -164,20 +154,5 @@ export class AuthService {
     }
 
     return validatedPayload;
-  }
-
-  /**
-   * ユーザーをレスポンス形式にフォーマットする
-   * @param user - ユーザーエンティティ
-   * @returns フォーマットされたユーザー情報
-   */
-  private formatUser(user: User): AuthResponse["user"] {
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      created_at: user.createdAt.toISOString(),
-      updated_at: user.updatedAt.toISOString(),
-    };
   }
 }
