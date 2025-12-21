@@ -4,7 +4,10 @@
  */
 
 import { TODO } from "../../lib/constants";
-import type { Category, Tag, Todo } from "../../models/schema";
+import type { Category, NewTodo, Tag, Todo } from "../../models/schema";
+
+/** Todo更新データ型（userIdを除く部分更新用） */
+export type TodoUpdateData = Partial<Omit<NewTodo, "userId">>;
 
 /** カテゴリ参照（TodoレスポンスのネストされたCategory） */
 export interface CategoryRef {

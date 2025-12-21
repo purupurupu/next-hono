@@ -95,10 +95,14 @@ export const updateOrderSchema = z.object({
 export const idParamSchema = z.object({
   id: z
     .string()
-    .transform((val) => {
+    .transform((val, ctx) => {
       const parsed = Number.parseInt(val, 10);
-      if (Number.isNaN(parsed) || parsed <= 0) {
-        throw new Error("IDは正の整数である必要があります");
+      if (Number.isNaN(parsed) || parsed <= 0 || !Number.isInteger(parsed)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "IDは正の整数である必要があります",
+        });
+        return z.NEVER;
       }
       return parsed;
     }),
