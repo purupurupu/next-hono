@@ -11,37 +11,59 @@ import { CategoryRepository } from "../features/todo/category-repository";
 import { TodoService } from "../features/todo/service";
 import { TagRepository } from "../features/todo/tag-repository";
 import { TodoRepository } from "../features/todo/todo-repository";
-import { TodoTagRepository } from "../features/todo/todo-tag-repository";
 import { getDb } from "./db";
 
 /** データベース接続（シングルトン） */
 const db = getDb();
 
+// シングルトンインスタンス（Auth関連）
+let authServiceInstance: AuthService | null = null;
+let userRepositoryInstance: UserRepository | null = null;
+let jwtDenylistRepositoryInstance: JwtDenylistRepository | null = null;
+
 /**
- * AuthServiceのインスタンスを取得する
+ * AuthServiceのインスタンスを取得する（シングルトン）
  * @returns AuthServiceインスタンス
  */
 export function getAuthService(): AuthService {
-  return new AuthService(
-    new UserRepository(db),
-    new JwtDenylistRepository(db),
-  );
+  if (!authServiceInstance) {
+    authServiceInstance = new AuthService(
+      getUserRepository(),
+      getJwtDenylistRepository(),
+    );
+  }
+  return authServiceInstance;
 }
 
 /**
- * UserRepositoryのインスタンスを取得する
+ * UserRepositoryのインスタンスを取得する（シングルトン）
  * @returns UserRepositoryインスタンス
  */
 export function getUserRepository(): UserRepository {
-  return new UserRepository(db);
+  if (!userRepositoryInstance) {
+    userRepositoryInstance = new UserRepository(db);
+  }
+  return userRepositoryInstance;
 }
 
 /**
- * JwtDenylistRepositoryのインスタンスを取得する
+ * JwtDenylistRepositoryのインスタンスを取得する（シングルトン）
  * @returns JwtDenylistRepositoryインスタンス
  */
 export function getJwtDenylistRepository(): JwtDenylistRepository {
-  return new JwtDenylistRepository(db);
+  if (!jwtDenylistRepositoryInstance) {
+    jwtDenylistRepositoryInstance = new JwtDenylistRepository(db);
+  }
+  return jwtDenylistRepositoryInstance;
+}
+
+/**
+ * シングルトンインスタンスをリセットする（テスト用）
+ */
+export function resetSingletons(): void {
+  authServiceInstance = null;
+  userRepositoryInstance = null;
+  jwtDenylistRepositoryInstance = null;
 }
 
 // ============================================
@@ -54,8 +76,8 @@ export function getJwtDenylistRepository(): JwtDenylistRepository {
  */
 export function getTodoService(): TodoService {
   return new TodoService(
+    db,
     new TodoRepository(db),
-    new TodoTagRepository(db),
     new CategoryRepository(db),
     new TagRepository(db),
   );
