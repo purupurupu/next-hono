@@ -63,6 +63,12 @@ docker compose exec backend bun run dev
 docker compose exec backend bun run test
 docker compose exec backend bun run test:watch
 
+# Run single test file
+docker compose exec backend bun run test tests/auth.test.ts
+
+# Run specific test case by name
+docker compose exec backend bun run test -t "should create todo"
+
 # TypeScript check
 docker compose exec backend bun run typecheck
 
@@ -139,6 +145,13 @@ backend/
 - `type-guards.ts` → `lib/`（汎用ユーティリティ、ドメイン非依存）
 - `auth middleware` → `shared/`（認証ドメイン知識を含む、複数featureで使用）
 - `user-repository.ts` → `features/auth/`（authでのみ使用、将来共有時にsharedへ移動）
+
+**DI/トランザクションパターン**:
+- `container.ts`: サービスとリポジトリのファクトリを提供
+- 通常のリポジトリ: 読み取り操作用（インスタンス再利用でオーバーヘッド削減）
+- `RepositoryFactories`: トランザクション内で新しいリポジトリを作成するためのファクトリ
+  - Drizzleではトランザクション内の操作にはトランザクションオブジェクト(tx)を使用する必要がある
+  - 通常のdb接続を使うとトランザクション外の操作になるため、ファクトリで新しいインスタンスを作成
 
 **Key Dependencies**:
 - Hono (web framework)

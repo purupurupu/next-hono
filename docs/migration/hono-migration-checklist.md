@@ -132,52 +132,52 @@
 ## Phase 2: Todo基本CRUD（最優先）
 
 ### バリデータ
-- [ ] `src/validators/todo.ts`
-  - [ ] `createTodoSchema` - title, description, priority, status, due_date, category_id, tag_ids
-  - [ ] `updateTodoSchema` - 全フィールドオプショナル
-  - [ ] `updateOrderSchema` - id, position の配列
+- [x] `src/features/todo/validators.ts`
+  - [x] `createTodoSchema` - title, description, priority, status, due_date, category_id, tag_ids
+  - [x] `updateTodoSchema` - 全フィールドオプショナル
+  - [x] `updateOrderSchema` - id, position の配列
 
 ### Repository
-- [ ] `src/repositories/todo.ts`
-  - [ ] `TodoRepositoryInterface` 定義
-  - [ ] `findAllByUserId(userId: number)` - 一覧取得（position順）
-  - [ ] `findById(id: number, userId: number)` - 詳細取得
-  - [ ] `create(todo: NewTodo)` - 作成
-  - [ ] `update(id: number, userId: number, data: UpdateTodo)` - 更新
-  - [ ] `delete(id: number, userId: number)` - 削除
-  - [ ] `updateOrder(updates: {id: number, position: number}[])` - 順序更新
-  - [ ] `getMaxPosition(userId: number)` - 最大position取得
+- [x] `src/features/todo/todo-repository.ts`
+  - [x] `TodoRepositoryInterface` 定義
+  - [x] `findAll(userId: number)` - 一覧取得（position順）
+  - [x] `findById(id: number, userId: number)` - 詳細取得
+  - [x] `create(todo: NewTodo)` - 作成
+  - [x] `update(id: number, userId: number, data: UpdateTodo)` - 更新
+  - [x] `delete(id: number, userId: number)` - 削除
+  - [x] `updatePositions(updates: {id: number, position: number}[])` - 順序更新
+  - [x] `getMaxPosition(userId: number)` - 最大position取得
 
 ### Service
-- [ ] `src/services/todo.ts`
-  - [ ] `TodoService` クラス
-  - [ ] カテゴリーカウント自動更新
-  - [ ] タグ関連付け処理
+- [x] `src/features/todo/service.ts`
+  - [x] `TodoService` クラス
+  - [x] カテゴリーカウント自動更新
+  - [x] タグ関連付け処理
 
 ### Routes
-- [ ] `src/routes/todos.ts`
-  - [ ] `GET /api/v1/todos` - 一覧取得
-  - [ ] `POST /api/v1/todos` - 作成
-  - [ ] `GET /api/v1/todos/:id` - 詳細取得
-  - [ ] `PATCH /api/v1/todos/:id` - 更新
-  - [ ] `DELETE /api/v1/todos/:id` - 削除
-  - [ ] `PATCH /api/v1/todos/update_order` - 順序一括更新
+- [x] `src/features/todo/routes.ts`
+  - [x] `GET /api/v1/todos` - 一覧取得
+  - [x] `POST /api/v1/todos` - 作成
+  - [x] `GET /api/v1/todos/:id` - 詳細取得
+  - [x] `PATCH /api/v1/todos/:id` - 更新
+  - [x] `DELETE /api/v1/todos/:id` - 削除
+  - [x] `PATCH /api/v1/todos/update_order` - 順序一括更新
 
 ### バリデーション
-- [ ] title: 必須、1-255文字
-- [ ] priority: 0-2の範囲（low/medium/high）
-- [ ] status: 0-2の範囲（pending/in_progress/completed）
-- [ ] due_date: ISO 8601形式
+- [x] title: 必須、1-255文字
+- [x] priority: enum形式（low/medium/high）
+- [x] status: enum形式（pending/in_progress/completed）
+- [x] due_date: YYYY-MM-DD形式
 
 ### ユーザースコープ
-- [ ] 全クエリに `user_id = ?` 条件追加
-- [ ] 他ユーザーのTodoにアクセス不可を確認
+- [x] 全クエリに `user_id = ?` 条件追加
+- [x] 他ユーザーのTodoにアクセス不可を確認
 
 ### テスト
-- [ ] CRUD全操作テスト
-- [ ] ユーザースコープテスト（他ユーザーデータアクセス拒否）
-- [ ] バリデーションエラーテスト
-- [ ] 順序更新テスト
+- [x] CRUD全操作テスト
+- [x] ユーザースコープテスト（他ユーザーデータアクセス拒否）
+- [x] バリデーションエラーテスト
+- [x] 順序更新テスト
 
 ### フロントエンド統合確認
 - [ ] Todo一覧表示
