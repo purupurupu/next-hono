@@ -191,67 +191,76 @@
 ### Category
 
 #### バリデータ
-- [ ] `src/validators/category.ts`
-  - [ ] `createCategorySchema` - name, color
-  - [ ] `updateCategorySchema`
+- [x] `src/features/category/validators.ts`
+  - [x] `createCategorySchema` - name, color
+  - [x] `updateCategorySchema`
 
 #### Repository
-- [ ] `src/repositories/category.ts`
-  - [ ] CRUD操作
-  - [ ] `incrementTodosCount(id: number)` - カウント増加
-  - [ ] `decrementTodosCount(id: number)` - カウント減少
+- [x] `src/features/category/repository.ts`
+  - [x] CRUD操作
+  - [x] `incrementTodosCount(id: number)` - カウント増加（既存: features/todo/category-repository.ts）
+  - [x] `decrementTodosCount(id: number)` - カウント減少（既存: features/todo/category-repository.ts）
+
+#### Service
+- [x] `src/features/category/service.ts`
+  - [x] list, show, create, update, destroy
 
 #### Routes
-- [ ] `src/routes/categories.ts`
-  - [ ] `GET /api/v1/categories` - 一覧
-  - [ ] `POST /api/v1/categories` - 作成
-  - [ ] `GET /api/v1/categories/:id` - 詳細
-  - [ ] `PATCH /api/v1/categories/:id` - 更新
-  - [ ] `DELETE /api/v1/categories/:id` - 削除
+- [x] `src/features/category/routes.ts`
+  - [x] `GET /api/v1/categories` - 一覧
+  - [x] `POST /api/v1/categories` - 作成
+  - [x] `GET /api/v1/categories/:id` - 詳細
+  - [x] `PATCH /api/v1/categories/:id` - 更新
+  - [x] `DELETE /api/v1/categories/:id` - 削除
 
 #### バリデーション
-- [ ] name: 必須、50文字以下、ユーザー内ユニーク
-- [ ] color: 必須、HEX形式（#RRGGBB）
+- [x] name: 必須、50文字以下、ユーザー内ユニーク
+- [x] color: 必須、HEX形式（#RRGGBB）
 
 ### Tag
 
 #### バリデータ
-- [ ] `src/validators/tag.ts`
-  - [ ] `createTagSchema` - name, color
-  - [ ] `updateTagSchema`
+- [x] `src/features/tag/validators.ts`
+  - [x] `createTagSchema` - name, color
+  - [x] `updateTagSchema`
 
 #### Repository
-- [ ] `src/repositories/tag.ts`
-  - [ ] CRUD操作
-  - [ ] `syncTodoTags(todoId: number, tagIds: number[])` - タグ同期
+- [x] `src/features/tag/repository.ts`
+  - [x] CRUD操作
+  - [x] `syncTodoTags(todoId: number, tagIds: number[])` - タグ同期（既存: features/todo/todo-tag-repository.ts）
+
+#### Service
+- [x] `src/features/tag/service.ts`
+  - [x] list, show, create, update, destroy
 
 #### Routes
-- [ ] `src/routes/tags.ts`
-  - [ ] `GET /api/v1/tags` - 一覧
-  - [ ] `POST /api/v1/tags` - 作成
-  - [ ] `GET /api/v1/tags/:id` - 詳細
-  - [ ] `PATCH /api/v1/tags/:id` - 更新
-  - [ ] `DELETE /api/v1/tags/:id` - 削除
+- [x] `src/features/tag/routes.ts`
+  - [x] `GET /api/v1/tags` - 一覧
+  - [x] `POST /api/v1/tags` - 作成
+  - [x] `GET /api/v1/tags/:id` - 詳細
+  - [x] `PATCH /api/v1/tags/:id` - 更新
+  - [x] `DELETE /api/v1/tags/:id` - 削除
 
 #### バリデーション
-- [ ] name: 必須、30文字以下、ユーザー内ユニーク、正規化（小文字+trim）
-- [ ] color: オプション、HEX形式
+- [x] name: 必須、30文字以下、ユーザー内ユニーク、正規化（小文字+trim）
+- [x] color: オプション、HEX形式
 
 ### Todo-Category/Tag連携
-- [ ] Todo作成・更新時のcategory_id設定
-- [ ] Todo作成・更新時のtag_ids設定
-- [ ] 他ユーザーのCategory/Tag使用禁止
+- [x] Todo作成・更新時のcategory_id設定（既存実装済み）
+- [x] Todo作成・更新時のtag_ids設定（既存実装済み）
+- [x] 他ユーザーのCategory/Tag使用禁止（既存実装済み）
 
 ### テスト
-- [ ] Category CRUD テスト
-- [ ] Tag CRUD テスト
-- [ ] カウンターキャッシュテスト
-- [ ] ユニーク制約テスト
+- [x] Category CRUD テスト (`tests/category.test.ts`)
+- [x] Tag CRUD テスト (`tests/tag.test.ts`)
+- [x] カウンターキャッシュテスト（Todo削除拒否テストで確認）
+- [x] ユニーク制約テスト
 
 ### フロントエンド統合確認
-- [ ] カテゴリ管理画面
-- [ ] タグ管理画面
-- [ ] Todo編集でのカテゴリ・タグ選択
+- [x] カテゴリ管理画面（既存実装済み）
+- [x] タグ管理画面（既存実装済み）
+- [x] Todo編集でのカテゴリ・タグ選択（既存実装済み）
+- [x] フロントエンド型定義修正（`todo_count` → `todos_count`）
 
 ---
 
