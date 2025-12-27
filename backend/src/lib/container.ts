@@ -7,6 +7,10 @@
 import { JwtDenylistRepository } from "../features/auth/jwt-denylist-repository";
 import { AuthService } from "../features/auth/service";
 import { UserRepository } from "../features/auth/user-repository";
+import { CategoryRepository as CategoryCrudRepository } from "../features/category/repository";
+import { CategoryService } from "../features/category/service";
+import { TagRepository as TagCrudRepository } from "../features/tag/repository";
+import { TagService } from "../features/tag/service";
 import { CategoryRepository } from "../features/todo/category-repository";
 import { TodoService } from "../features/todo/service";
 import { TagRepository } from "../features/todo/tag-repository";
@@ -103,4 +107,44 @@ export function getTodoService(): TodoService {
     new TagRepository(db),
     getRepositoryFactories(),
   );
+}
+
+// ============================================
+// Category Feature (CRUD)
+// ============================================
+
+/**
+ * CategoryCrudRepositoryのインスタンスを取得する
+ * @returns CategoryCrudRepositoryインスタンス
+ */
+export function getCategoryRepository(): CategoryCrudRepository {
+  return new CategoryCrudRepository(getDb());
+}
+
+/**
+ * CategoryServiceのインスタンスを取得する
+ * @returns CategoryServiceインスタンス
+ */
+export function getCategoryService(): CategoryService {
+  return new CategoryService(getCategoryRepository());
+}
+
+// ============================================
+// Tag Feature (CRUD)
+// ============================================
+
+/**
+ * TagCrudRepositoryのインスタンスを取得する
+ * @returns TagCrudRepositoryインスタンス
+ */
+export function getTagRepository(): TagCrudRepository {
+  return new TagCrudRepository(getDb());
+}
+
+/**
+ * TagServiceのインスタンスを取得する
+ * @returns TagServiceインスタンス
+ */
+export function getTagService(): TagService {
+  return new TagService(getTagRepository());
 }
