@@ -22,3 +22,24 @@ export const idParamSchema = z.object({
 
 /** IDパラメータ型 */
 export type IdParam = z.infer<typeof idParamSchema>;
+
+/**
+ * HEX色コード正規表現（#RRGGBB形式）
+ */
+export const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+
+/**
+ * 必須の色バリデーションスキーマ
+ */
+export const requiredColorSchema = z
+  .string({ message: "色は必須です" })
+  .regex(hexColorRegex, { message: "色は #RRGGBB 形式で入力してください" });
+
+/**
+ * オプションの色バリデーションスキーマ
+ */
+export const optionalColorSchema = z
+  .string()
+  .regex(hexColorRegex, { message: "色は #RRGGBB 形式で入力してください" })
+  .nullable()
+  .optional();

@@ -5,17 +5,7 @@
 
 import { z } from "zod";
 import { TAG } from "../../lib/constants";
-
-/**
- * 色のバリデーションスキーマ（#RRGGBB形式、オプション）
- */
-const colorSchema = z
-  .string()
-  .regex(/^#[0-9A-Fa-f]{6}$/, {
-    message: "色は #RRGGBB 形式で入力してください",
-  })
-  .nullable()
-  .optional();
+import { optionalColorSchema } from "../../shared/validators/common";
 
 /**
  * タグ名を正規化する（小文字+trim）
@@ -37,7 +27,7 @@ export const createTagSchema = z.object({
       message: `名前は${TAG.NAME_MAX_LENGTH}文字以内で入力してください`,
     })
     .transform(normalizeTagName),
-  color: colorSchema,
+  color: optionalColorSchema,
 });
 
 /**
@@ -52,7 +42,7 @@ export const updateTagSchema = z.object({
     })
     .transform(normalizeTagName)
     .optional(),
-  color: colorSchema,
+  color: optionalColorSchema,
 });
 
 // IDパラメータスキーマは共通モジュールからre-export

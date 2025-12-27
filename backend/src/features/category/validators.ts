@@ -5,15 +5,7 @@
 
 import { z } from "zod";
 import { CATEGORY } from "../../lib/constants";
-
-/**
- * 色のバリデーションスキーマ（#RRGGBB形式）
- */
-const colorSchema = z
-  .string({ message: "色は必須です" })
-  .regex(/^#[0-9A-Fa-f]{6}$/, {
-    message: "色は #RRGGBB 形式で入力してください",
-  });
+import { requiredColorSchema } from "../../shared/validators/common";
 
 /**
  * カテゴリ作成スキーマ
@@ -25,7 +17,7 @@ export const createCategorySchema = z.object({
     .max(CATEGORY.NAME_MAX_LENGTH, {
       message: `名前は${CATEGORY.NAME_MAX_LENGTH}文字以内で入力してください`,
     }),
-  color: colorSchema,
+  color: requiredColorSchema,
 });
 
 /**
@@ -39,7 +31,7 @@ export const updateCategorySchema = z.object({
       message: `名前は${CATEGORY.NAME_MAX_LENGTH}文字以内で入力してください`,
     })
     .optional(),
-  color: colorSchema.optional(),
+  color: requiredColorSchema.optional(),
 });
 
 // IDパラメータスキーマは共通モジュールからre-export
