@@ -50,6 +50,59 @@ export const errorResponseSchema = z.object({
 export type ErrorResponse = z.infer<typeof errorResponseSchema>;
 
 // ============================================
+// Category
+// ============================================
+
+/**
+ * カテゴリレスポンススキーマ（一覧・詳細用）
+ */
+export const categoryResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  color: z.string(),
+  todos_count: z.number(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+/** カテゴリレスポンスの型 */
+export type CategoryResponse = z.infer<typeof categoryResponseSchema>;
+
+/**
+ * カテゴリ一覧レスポンススキーマ
+ */
+export const categoryListResponseSchema = z.array(categoryResponseSchema);
+
+/** カテゴリ一覧レスポンスの型 */
+export type CategoryListResponse = z.infer<typeof categoryListResponseSchema>;
+
+// ============================================
+// Tag
+// ============================================
+
+/**
+ * タグレスポンススキーマ（一覧・詳細用）
+ */
+export const tagResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  color: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+/** タグレスポンスの型 */
+export type TagResponse = z.infer<typeof tagResponseSchema>;
+
+/**
+ * タグ一覧レスポンススキーマ
+ */
+export const tagListResponseSchema = z.array(tagResponseSchema);
+
+/** タグ一覧レスポンスの型 */
+export type TagListResponse = z.infer<typeof tagListResponseSchema>;
+
+// ============================================
 // Todo
 // ============================================
 

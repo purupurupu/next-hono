@@ -1,26 +1,15 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { z } from "zod";
 import { createApp } from "../src/lib/app";
 import {
   authResponseSchema,
   errorResponseSchema,
+  tagListResponseSchema,
+  tagResponseSchema,
 } from "../src/shared/validators/responses";
 import { parseResponse } from "./helpers/response";
 import { clearDatabase } from "./setup";
 
 const app = createApp();
-
-/** タグレスポンススキーマ */
-const tagResponseSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  color: z.string().nullable(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
-
-/** タグ一覧レスポンススキーマ */
-const tagListResponseSchema = z.array(tagResponseSchema);
 
 /**
  * テスト用ユーザーを作成してトークンを取得する
