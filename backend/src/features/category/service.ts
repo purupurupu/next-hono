@@ -75,11 +75,7 @@ export class CategoryService {
    * @throws カテゴリが見つからない場合は404エラー
    * @throws 同じ名前のカテゴリが存在する場合は409エラー
    */
-  async update(
-    id: number,
-    input: UpdateCategoryInput,
-    userId: number,
-  ): Promise<CategoryResponse> {
+  async update(id: number, input: UpdateCategoryInput, userId: number): Promise<CategoryResponse> {
     const existing = await this.categoryRepository.findById(id, userId);
     if (!existing) {
       throw notFound("カテゴリ", id);

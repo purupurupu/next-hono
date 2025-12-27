@@ -5,11 +5,7 @@
 
 import { TODO } from "../../lib/constants";
 import type { Category, NewTodo, Tag, Todo } from "../../models/schema";
-import type {
-  CategoryRef,
-  TagRef,
-  TodoResponse,
-} from "../../shared/validators/responses";
+import type { CategoryRef, TagRef, TodoResponse } from "../../shared/validators/responses";
 
 // 型はresponses.tsから再エクスポート
 export type {
@@ -33,9 +29,7 @@ export interface TodoWithRelations {
  * @param priority - 優先度（0, 1, 2）
  * @returns 優先度文字列（"low", "medium", "high"）
  */
-export function priorityToString(
-  priority: number,
-): "low" | "medium" | "high" {
+export function priorityToString(priority: number): "low" | "medium" | "high" {
   const value = TODO.PRIORITY_REVERSE[priority];
   if (!value) {
     return "medium"; // デフォルト値
@@ -48,9 +42,7 @@ export function priorityToString(
  * @param status - ステータス（0, 1, 2）
  * @returns ステータス文字列（"pending", "in_progress", "completed"）
  */
-export function statusToString(
-  status: number,
-): "pending" | "in_progress" | "completed" {
+export function statusToString(status: number): "pending" | "in_progress" | "completed" {
   const value = TODO.STATUS_REVERSE[status];
   if (!value) {
     return "pending"; // デフォルト値

@@ -35,7 +35,7 @@ export const updateCategorySchema = z.object({
 });
 
 // IDパラメータスキーマは共通モジュールからre-export
-export { idParamSchema, type IdParam } from "../../shared/validators/common";
+export { type IdParam, idParamSchema } from "../../shared/validators/common";
 
 /** カテゴリ作成入力型 */
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;

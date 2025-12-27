@@ -5,7 +5,7 @@
 
 import { conflict, notFound } from "../../lib/errors";
 import type { TagRepositoryInterface } from "./repository";
-import { type TagResponse, formatTagResponse } from "./types";
+import { formatTagResponse, type TagResponse } from "./types";
 import type { CreateTagInput, UpdateTagInput } from "./validators";
 
 /**

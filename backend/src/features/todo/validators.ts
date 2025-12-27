@@ -35,11 +35,9 @@ function hasNoDuplicates<T>(arr: T[]): boolean {
 }
 
 /** tag_ids スキーマ（重複チェック付き） */
-const tagIdsSchema = z
-  .array(z.number().int().positive())
-  .refine(hasNoDuplicates, {
-    message: "tag_idsに重複するIDが含まれています",
-  });
+const tagIdsSchema = z.array(z.number().int().positive()).refine(hasNoDuplicates, {
+  message: "tag_idsに重複するIDが含まれています",
+});
 
 /**
  * Todo作成スキーマ
@@ -103,14 +101,13 @@ export const updateOrderSchema = z.object({
       }),
     )
     .min(1, { message: "少なくとも1つのTodoを指定してください" })
-    .refine(
-      (todos) => hasNoDuplicates(todos.map((t) => t.id)),
-      { message: "todosに重複するIDが含まれています" },
-    ),
+    .refine((todos) => hasNoDuplicates(todos.map((t) => t.id)), {
+      message: "todosに重複するIDが含まれています",
+    }),
 });
 
 // IDパラメータスキーマは共通モジュールからre-export
-export { idParamSchema, type IdParam } from "../../shared/validators/common";
+export { type IdParam, idParamSchema } from "../../shared/validators/common";
 
 /** Todo作成入力型 */
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;

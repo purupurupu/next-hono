@@ -15,16 +15,8 @@ import {
 import type { CategoryRepositoryInterface } from "./category-repository";
 import type { TagRepositoryInterface } from "./tag-repository";
 import type { TodoRepositoryInterface } from "./todo-repository";
-import {
-  type TodoResponse,
-  type TodoUpdateData,
-  formatTodoResponse,
-} from "./types";
-import type {
-  CreateTodoInput,
-  UpdateOrderInput,
-  UpdateTodoInput,
-} from "./validators";
+import { formatTodoResponse, type TodoResponse, type TodoUpdateData } from "./types";
+import type { CreateTodoInput, UpdateOrderInput, UpdateTodoInput } from "./validators";
 
 /**
  * API入力をDB形式に変換するヘルパー（作成用）
@@ -92,9 +84,7 @@ function convertUpdateInputToDbFormat(input: UpdateTodoInput): TodoUpdateData {
     // completed が指定された場合は completed を優先
     updateData.completed = input.completed;
     // status も同期（completed: true → status: completed, false → status: pending）
-    updateData.status = input.completed
-      ? TODO.STATUS_MAP.completed
-      : TODO.STATUS_MAP.pending;
+    updateData.status = input.completed ? TODO.STATUS_MAP.completed : TODO.STATUS_MAP.pending;
   } else if (input.status !== undefined) {
     // status のみ指定された場合
     updateData.status = TODO.STATUS_MAP[input.status];
@@ -222,11 +212,7 @@ export class TodoService {
    * @throws NotFoundError - Todoが見つからない場合
    * @throws ForbiddenError - 他ユーザーのCategory/Tagを使用した場合
    */
-  async update(
-    id: number,
-    input: UpdateTodoInput,
-    userId: number,
-  ): Promise<TodoResponse> {
+  async update(id: number, input: UpdateTodoInput, userId: number): Promise<TodoResponse> {
     // 既存のTodoを取得（トランザクション外で事前検証）
     const existing = await this.todoRepository.findById(id, userId);
     if (!existing) {
@@ -265,8 +251,7 @@ export class TodoService {
       }
 
       // カテゴリのカウントを更新
-      const newCategoryId =
-        input.category_id !== undefined ? input.category_id : oldCategoryId;
+      const newCategoryId = input.category_id !== undefined ? input.category_id : oldCategoryId;
       if (oldCategoryId !== newCategoryId) {
         if (oldCategoryId) {
           await txCategoryRepo.decrementTodosCount(oldCategoryId);
@@ -343,10 +328,7 @@ export class TodoService {
    * @param userId - ユーザーID
    * @throws ForbiddenError - 他ユーザーのカテゴリの場合
    */
-  private async validateCategoryOwnership(
-    categoryId: number,
-    userId: number,
-  ): Promise<void> {
+  private async validateCategoryOwnership(categoryId: number, userId: number): Promise<void> {
     await validateSingleOwnership(
       categoryId,
       userId,
@@ -361,10 +343,7 @@ export class TodoService {
    * @param userId - ユーザーID
    * @throws ForbiddenError - 他ユーザーのタグが含まれている場合
    */
-  private async validateTagsOwnership(
-    tagIds: number[],
-    userId: number,
-  ): Promise<void> {
+  private async validateTagsOwnership(tagIds: number[], userId: number): Promise<void> {
     await validateMultipleOwnership(
       tagIds,
       userId,

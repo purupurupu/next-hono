@@ -46,7 +46,7 @@ export const updateTagSchema = z.object({
 });
 
 // IDパラメータスキーマは共通モジュールからre-export
-export { idParamSchema, type IdParam } from "../../shared/validators/common";
+export { type IdParam, idParamSchema } from "../../shared/validators/common";
 
 /** タグ作成入力型 */
 export type CreateTagInput = z.infer<typeof createTagSchema>;

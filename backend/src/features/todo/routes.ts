@@ -9,12 +9,7 @@ import { getTodoService } from "../../lib/container";
 import { created, noContent, ok } from "../../lib/response";
 import { handleValidationError } from "../../lib/validator";
 import { getCurrentUser, jwtAuth } from "../../shared/middleware/auth";
-import {
-  createTodoSchema,
-  idParamSchema,
-  updateOrderSchema,
-  updateTodoSchema,
-} from "./validators";
+import { createTodoSchema, idParamSchema, updateOrderSchema, updateTodoSchema } from "./validators";
 
 const todos = new Hono();
 
@@ -36,33 +31,25 @@ todos.get("/", async (c) => {
  * Todo詳細を取得
  * GET /api/v1/todos/:id
  */
-todos.get(
-  "/:id",
-  zValidator("param", idParamSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const { id } = c.req.valid("param");
-    const todoService = getTodoService();
-    const result = await todoService.show(id, user.id);
-    return ok(c, result);
-  },
-);
+todos.get("/:id", zValidator("param", idParamSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const { id } = c.req.valid("param");
+  const todoService = getTodoService();
+  const result = await todoService.show(id, user.id);
+  return ok(c, result);
+});
 
 /**
  * Todoを作成
  * POST /api/v1/todos
  */
-todos.post(
-  "/",
-  zValidator("json", createTodoSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const body = c.req.valid("json");
-    const todoService = getTodoService();
-    const result = await todoService.create(body, user.id);
-    return created(c, result);
-  },
-);
+todos.post("/", zValidator("json", createTodoSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const body = c.req.valid("json");
+  const todoService = getTodoService();
+  const result = await todoService.create(body, user.id);
+  return created(c, result);
+});
 
 /**
  * Todoの順序を一括更新
@@ -103,16 +90,12 @@ todos.patch(
  * Todoを削除
  * DELETE /api/v1/todos/:id
  */
-todos.delete(
-  "/:id",
-  zValidator("param", idParamSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const { id } = c.req.valid("param");
-    const todoService = getTodoService();
-    await todoService.destroy(id, user.id);
-    return noContent(c);
-  },
-);
+todos.delete("/:id", zValidator("param", idParamSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const { id } = c.req.valid("param");
+  const todoService = getTodoService();
+  await todoService.destroy(id, user.id);
+  return noContent(c);
+});
 
 export default todos;

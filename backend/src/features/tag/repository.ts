@@ -71,11 +71,7 @@ export class TagRepository implements TagRepositoryInterface {
   constructor(private db: DatabaseOrTransaction) {}
 
   async findAll(userId: number): Promise<Tag[]> {
-    return await this.db
-      .select()
-      .from(tags)
-      .where(eq(tags.userId, userId))
-      .orderBy(tags.name);
+    return await this.db.select().from(tags).where(eq(tags.userId, userId)).orderBy(tags.name);
   }
 
   async findById(id: number, userId: number): Promise<Tag | undefined> {

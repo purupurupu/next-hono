@@ -31,17 +31,13 @@ categories.get("/", async (c) => {
  * GET /api/v1/categories/:id
  * カテゴリ詳細を取得する
  */
-categories.get(
-  "/:id",
-  zValidator("param", idParamSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const { id } = c.req.valid("param");
-    const categoryService = getCategoryService();
-    const result = await categoryService.show(id, user.id);
-    return ok(c, result);
-  },
-);
+categories.get("/:id", zValidator("param", idParamSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const { id } = c.req.valid("param");
+  const categoryService = getCategoryService();
+  const result = await categoryService.show(id, user.id);
+  return ok(c, result);
+});
 
 /**
  * POST /api/v1/categories

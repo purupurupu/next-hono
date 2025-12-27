@@ -31,33 +31,25 @@ tags.get("/", async (c) => {
  * GET /api/v1/tags/:id
  * タグ詳細を取得する
  */
-tags.get(
-  "/:id",
-  zValidator("param", idParamSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const { id } = c.req.valid("param");
-    const tagService = getTagService();
-    const result = await tagService.show(id, user.id);
-    return ok(c, result);
-  },
-);
+tags.get("/:id", zValidator("param", idParamSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const { id } = c.req.valid("param");
+  const tagService = getTagService();
+  const result = await tagService.show(id, user.id);
+  return ok(c, result);
+});
 
 /**
  * POST /api/v1/tags
  * タグを作成する
  */
-tags.post(
-  "/",
-  zValidator("json", createTagSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const body = c.req.valid("json");
-    const tagService = getTagService();
-    const result = await tagService.create(body, user.id);
-    return created(c, result);
-  },
-);
+tags.post("/", zValidator("json", createTagSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const body = c.req.valid("json");
+  const tagService = getTagService();
+  const result = await tagService.create(body, user.id);
+  return created(c, result);
+});
 
 /**
  * PATCH /api/v1/tags/:id
@@ -81,16 +73,12 @@ tags.patch(
  * DELETE /api/v1/tags/:id
  * タグを削除する
  */
-tags.delete(
-  "/:id",
-  zValidator("param", idParamSchema, handleValidationError()),
-  async (c) => {
-    const user = getCurrentUser(c);
-    const { id } = c.req.valid("param");
-    const tagService = getTagService();
-    await tagService.destroy(id, user.id);
-    return noContent(c);
-  },
-);
+tags.delete("/:id", zValidator("param", idParamSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const { id } = c.req.valid("param");
+  const tagService = getTagService();
+  await tagService.destroy(id, user.id);
+  return noContent(c);
+});
 
 export default tags;

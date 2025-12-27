@@ -8,36 +8,28 @@ import { signInSchema, signUpSchema } from "./validators";
 
 const auth = new Hono();
 
-auth.post(
-  "/sign_up",
-  zValidator("json", signUpSchema, handleValidationError()),
-  async (c) => {
-    const body = c.req.valid("json");
-    const authService = getAuthService();
+auth.post("/sign_up", zValidator("json", signUpSchema, handleValidationError()), async (c) => {
+  const body = c.req.valid("json");
+  const authService = getAuthService();
 
-    const result = await authService.signUp(
-      body.email,
-      body.password,
-      body.password_confirmation,
-      body.name,
-    );
+  const result = await authService.signUp(
+    body.email,
+    body.password,
+    body.password_confirmation,
+    body.name,
+  );
 
-    return created(c, result);
-  },
-);
+  return created(c, result);
+});
 
-auth.post(
-  "/sign_in",
-  zValidator("json", signInSchema, handleValidationError()),
-  async (c) => {
-    const body = c.req.valid("json");
-    const authService = getAuthService();
+auth.post("/sign_in", zValidator("json", signInSchema, handleValidationError()), async (c) => {
+  const body = c.req.valid("json");
+  const authService = getAuthService();
 
-    const result = await authService.signIn(body.email, body.password);
+  const result = await authService.signIn(body.email, body.password);
 
-    return ok(c, result);
-  },
-);
+  return ok(c, result);
+});
 
 auth.delete("/sign_out", jwtAuth(), async (c) => {
   const { payload } = getAuthContext(c);
