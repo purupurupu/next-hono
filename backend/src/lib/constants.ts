@@ -54,3 +54,15 @@ export type TodoPriority = keyof typeof TODO.PRIORITY_MAP;
 
 /** ステータスの文字列型 */
 export type TodoStatus = keyof typeof TODO.STATUS_MAP;
+
+/** カテゴリ関連の定数 */
+export const CATEGORY = {
+  /** 名前の最大文字数 */
+  NAME_MAX_LENGTH: 50,
+} as const;
+
+/** タグ関連の定数 */
+export const TAG = {
+  /** 名前の最大文字数 */
+  NAME_MAX_LENGTH: 30,
+} as const;
