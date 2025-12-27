@@ -265,6 +265,21 @@ chore: 依存関係を更新
 
 **PRタイトル・本文**: 日本語で記述
 
+**コミット分割ルール**:
+- 機能実装時は意味のある単位でコミットを分割する
+- 一度に全部まとめてコミットしない
+- 例: 新機能追加時
+  1. 定数・設定の追加
+  2. 機能A実装（repository, service, routes, tests）
+  3. 機能B実装（repository, service, routes, tests）
+  4. 統合設定（container, app登録）
+  5. フロントエンド修正
+  6. ドキュメント更新
+
+**ブランチ戦略**:
+- 機能開発時は `feature/xxx` ブランチを作成してから作業する
+- mainブランチに直接コミットしない
+
 ## Documentation
 
 See `docs/` for detailed documentation:
