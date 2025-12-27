@@ -109,24 +109,8 @@ export const updateOrderSchema = z.object({
     ),
 });
 
-/**
- * IDパラメータスキーマ
- */
-export const idParamSchema = z.object({
-  id: z
-    .string()
-    .transform((val, ctx) => {
-      const parsed = Number.parseInt(val, 10);
-      if (Number.isNaN(parsed) || parsed <= 0 || !Number.isInteger(parsed)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "IDは正の整数である必要があります",
-        });
-        return z.NEVER;
-      }
-      return parsed;
-    }),
-});
+// IDパラメータスキーマは共通モジュールからre-export
+export { idParamSchema, type IdParam } from "../../shared/validators/common";
 
 /** Todo作成入力型 */
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
@@ -136,6 +120,3 @@ export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
 
 /** 順序更新入力型 */
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
-
-/** IDパラメータ型 */
-export type IdParam = z.infer<typeof idParamSchema>;

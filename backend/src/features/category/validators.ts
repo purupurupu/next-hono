@@ -42,22 +42,8 @@ export const updateCategorySchema = z.object({
   color: colorSchema.optional(),
 });
 
-/**
- * IDパラメータスキーマ
- */
-export const idParamSchema = z.object({
-  id: z.string().transform((val, ctx) => {
-    const parsed = Number.parseInt(val, 10);
-    if (Number.isNaN(parsed) || parsed <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "IDは正の整数である必要があります",
-      });
-      return z.NEVER;
-    }
-    return parsed;
-  }),
-});
+// IDパラメータスキーマは共通モジュールからre-export
+export { idParamSchema, type IdParam } from "../../shared/validators/common";
 
 /** カテゴリ作成入力型 */
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
