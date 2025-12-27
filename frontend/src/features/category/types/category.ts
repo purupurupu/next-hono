@@ -7,7 +7,7 @@ import type { BaseEntity, CreateData, UpdateData, ValidationErrors } from "@/typ
 export interface Category extends BaseEntity {
   name: string;
   color: string;
-  todo_count: number;
+  todos_count: number;
 }
 
 // Category operations
