@@ -7,13 +7,13 @@ import { and, asc, eq, inArray, max } from "drizzle-orm";
 import type { DatabaseOrTransaction } from "../../lib/db";
 import {
   type Category,
+  categories,
   type NewTodo,
   type Tag,
   type Todo,
-  categories,
   tags,
-  todoTags,
   todos,
+  todoTags,
 } from "../../models/schema";
 import type { TodoWithRelations } from "./types";
 
@@ -84,10 +84,7 @@ export interface TodoRepositoryInterface {
    * @param updates - 更新データの配列（idとposition）
    * @param userId - ユーザーID
    */
-  updatePositions(
-    updates: Array<{ id: number; position: number }>,
-    userId: number,
-  ): Promise<void>;
+  updatePositions(updates: Array<{ id: number; position: number }>, userId: number): Promise<void>;
 }
 
 /**
@@ -119,11 +116,7 @@ export class TodoRepository implements TodoRepositoryInterface {
 
     // カテゴリIDを収集
     const categoryIds = [
-      ...new Set(
-        todoList
-          .map((t) => t.categoryId)
-          .filter((id): id is number => id !== null),
-      ),
+      ...new Set(todoList.map((t) => t.categoryId).filter((id): id is number => id !== null)),
     ];
 
     // カテゴリを取得

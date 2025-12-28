@@ -22,6 +22,8 @@ services:
       - rustfs
     environment:
       - DATABASE_URL=postgres://postgres:password@db:5432/todo_next_hono
+      - DB_TEST_HOST=db_test
+      - DB_TEST_PORT=5432
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-key-change-in-production}
       - PORT=3000
       - ENV=development

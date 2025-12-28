@@ -61,7 +61,7 @@ export function CategoryList({ categories, onUpdate, onDelete }: CategoryListPro
             <div>
               <p className="font-medium">{category.name}</p>
               <p className="text-sm text-gray-500">
-                {category.todo_count}
+                {category.todos_count}
                 {" "}
                 個のタスク
               </p>

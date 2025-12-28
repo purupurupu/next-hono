@@ -10,8 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Full-stack Todo application with:
 
 - **Frontend**: Next.js 16 with TypeScript, React 19.2, Tailwind CSS v4
-- **Package Manager**: pnpm (frontend), bun (backend)
-- **Backend**: Hono (TypeScript) with Drizzle ORM, JWT authentication
+- **Package Manager**: pnpm (frontend/backend共通)
+- **Backend**: Hono (TypeScript) with Drizzle ORM, JWT authentication, Node.js v24
 - **Database**: PostgreSQL 15
 - **Cache**: Redis 7
 - **Storage**: RustFS (S3互換)
@@ -53,29 +53,33 @@ docker compose exec frontend pnpm run lint:fix   # ESLint with auto-fix
 docker compose exec frontend pnpm run typecheck  # TypeScript check
 ```
 
-### Backend Development (Hono/Bun)
+### Backend Development (Hono/Node.js)
 
 ```bash
 # Run development server with hot reload
-docker compose exec backend bun run dev
+docker compose exec backend pnpm run dev
 
 # Run tests
-docker compose exec backend bun run test
-docker compose exec backend bun run test:watch
+docker compose exec backend pnpm run test
+docker compose exec backend pnpm run test:watch
 
 # Run single test file
-docker compose exec backend bun run test tests/auth.test.ts
+docker compose exec backend pnpm run test tests/auth.test.ts
 
 # Run specific test case by name
-docker compose exec backend bun run test -t "should create todo"
+docker compose exec backend pnpm run test -t "should create todo"
+
+# ローカルでテスト実行（db_testが起動している必要あり）
+docker compose up -d db_test
+cd backend && pnpm run test
 
 # TypeScript check
-docker compose exec backend bun run typecheck
+docker compose exec backend pnpm run typecheck
 
 # Database operations
-docker compose exec backend bun run db:generate  # Generate migrations
-docker compose exec backend bun run db:push      # Push schema to database
-docker compose exec backend bun run db:studio    # Open Drizzle Studio
+docker compose exec backend pnpm run db:generate  # Generate migrations
+docker compose exec backend pnpm run db:push      # Push schema to database
+docker compose exec backend pnpm run db:studio    # Open Drizzle Studio
 ```
 
 ### Database
@@ -85,7 +89,7 @@ docker compose exec backend bun run db:studio    # Open Drizzle Studio
 docker compose up -d db_test
 
 # Apply schema changes (development)
-DATABASE_URL=postgres://postgres:password@localhost:5432/todo_next_hono bunx drizzle-kit push --force
+DATABASE_URL=postgres://postgres:password@localhost:5432/todo_next_hono npx drizzle-kit push --force
 ```
 
 ## Backend Architecture (Hono/TypeScript)
@@ -240,10 +244,10 @@ frontend/src/
 
 ## Development Guidelines
 
-1. **Package Manager**: pnpm for frontend, bun for backend
+1. **Package Manager**: pnpm for both frontend and backend
 2. **API Calls**: Use provided API clients, not direct fetch
 3. **Docker**: Rebuild images after dependency changes
-4. **Before PR**: Run `pnpm run lint`, `pnpm run typecheck`, `bun run test`
+4. **Before PR**: Run `pnpm run lint`, `pnpm run typecheck`, `pnpm run test`
 
 ## TypeScript Guidelines
 
@@ -264,6 +268,21 @@ chore: 依存関係を更新
 ```
 
 **PRタイトル・本文**: 日本語で記述
+
+**コミット分割ルール**:
+- 機能実装時は意味のある単位でコミットを分割する
+- 一度に全部まとめてコミットしない
+- 例: 新機能追加時
+  1. 定数・設定の追加
+  2. 機能A実装（repository, service, routes, tests）
+  3. 機能B実装（repository, service, routes, tests）
+  4. 統合設定（container, app登録）
+  5. フロントエンド修正
+  6. ドキュメント更新
+
+**ブランチ戦略**:
+- 機能開発時は `feature/xxx` ブランチを作成してから作業する
+- mainブランチに直接コミットしない
 
 ## Documentation
 
