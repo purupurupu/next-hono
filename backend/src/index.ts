@@ -1,3 +1,4 @@
+import { serve } from "@hono/node-server";
 import { createApp } from "./lib/app";
 import { getConfig } from "./lib/config";
 import { closeDb } from "./lib/db";
@@ -18,7 +19,7 @@ process.on("SIGTERM", shutdown);
 const config = getConfig();
 console.log(`Server starting on port ${config.PORT}...`);
 
-export default {
-  port: config.PORT,
+serve({
   fetch: app.fetch,
-};
+  port: config.PORT,
+});
