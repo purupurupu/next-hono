@@ -1,12 +1,13 @@
 import { defineConfig } from "vitest/config";
 
-// 環境変数が設定されていない場合のみデフォルト値を使用
-// コンテナ内: compose.ymlの環境変数が使われる
-// ローカル: 下記のデフォルト値が使われる（db_testサービスへの接続）
+// テスト用DB接続設定
+// ローカル: localhost:5433 (db_testのポートマッピング)
+// コンテナ内: db_test:5432 (Docker内部ネットワーク)
+const dbHost = process.env.DB_TEST_HOST ?? "localhost";
+const dbPort = process.env.DB_TEST_PORT ?? "5433";
+
 const testEnv = {
-  DATABASE_URL:
-    process.env.DATABASE_URL ??
-    "postgres://postgres:password@localhost:5433/todo_next_test",
+  DATABASE_URL: `postgres://postgres:password@${dbHost}:${dbPort}/todo_next_test`,
   JWT_SECRET:
     process.env.JWT_SECRET ?? "test-secret-key-for-vitest-local-testing",
   S3_ENDPOINT: process.env.S3_ENDPOINT ?? "http://localhost:9000",
@@ -24,6 +25,8 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
     env: testEnv,
+    // テスト完了後にDB接続をクローズ
+    globalSetup: "./tests/global-setup.ts",
     // テストを順次実行（DB競合を防ぐ）
     fileParallelism: false,
     sequence: {
