@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { getConfig } from "../../lib/config";
 import { AUTH } from "../../lib/constants";
 import { conflict, unauthorized, validationError } from "../../lib/errors";
+import { AUTH_ERROR_MESSAGES } from "../../shared/errors/messages";
 import type { User } from "../../models/schema";
 import type { JwtDenylistRepositoryInterface } from "./jwt-denylist-repository";
 import { type TokenPayload, tokenPayloadSchema } from "./token-schema";
@@ -45,14 +46,14 @@ export class AuthService {
     name?: string,
   ): Promise<AuthResponse> {
     if (password !== passwordConfirmation) {
-      throw validationError("パスワードが一致しません", {
-        password_confirmation: ["パスワードが一致しません"],
+      throw validationError(AUTH_ERROR_MESSAGES.PASSWORD_MISMATCH, {
+        password_confirmation: [AUTH_ERROR_MESSAGES.PASSWORD_MISMATCH],
       });
     }
 
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw conflict("このメールアドレスは既に登録されています");
+      throw conflict(AUTH_ERROR_MESSAGES.EMAIL_CONFLICT);
     }
 
     const encryptedPassword = await bcrypt.hash(password, AUTH.BCRYPT_COST);
@@ -81,12 +82,12 @@ export class AuthService {
   async signIn(email: string, password: string): Promise<AuthResponse> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      throw unauthorized("メールアドレスまたはパスワードが正しくありません");
+      throw unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS);
     }
 
     const isValid = await bcrypt.compare(password, user.encryptedPassword);
     if (!isValid) {
-      throw unauthorized("メールアドレスまたはパスワードが正しくありません");
+      throw unauthorized(AUTH_ERROR_MESSAGES.INVALID_CREDENTIALS);
     }
 
     const token = await this.generateToken(user);
@@ -143,14 +144,14 @@ export class AuthService {
 
     const result = tokenPayloadSchema.safeParse(payload);
     if (!result.success) {
-      throw unauthorized("無効なトークンです");
+      throw unauthorized(AUTH_ERROR_MESSAGES.INVALID_TOKEN);
     }
 
     const validatedPayload = result.data;
 
     const isDenied = await this.jwtDenylistRepository.exists(validatedPayload.jti);
     if (isDenied) {
-      throw unauthorized("トークンは無効化されています");
+      throw unauthorized(AUTH_ERROR_MESSAGES.TOKEN_REVOKED);
     }
 
     return validatedPayload;
