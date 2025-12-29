@@ -1,6 +1,7 @@
 /**
- * カテゴリリポジトリ（Todo機能用）
- * @module features/todo/category-repository
+ * カテゴリカウンター（Todo機能用）
+ * カテゴリの所有者検証とTodoカウント更新を提供する
+ * @module features/todo/category-counter
  */
 
 import { and, eq, sql } from "drizzle-orm";
@@ -8,10 +9,10 @@ import type { DatabaseOrTransaction } from "../../lib/db";
 import { type Category, categories } from "../../models/schema";
 
 /**
- * カテゴリリポジトリのインターフェース（Todo機能用）
- * Phase 2ではカテゴリの所有者検証とカウント更新のみ必要
+ * カテゴリカウンターのインターフェース（Todo機能用）
+ * カテゴリの所有者検証とカウント更新のみを提供
  */
-export interface CategoryRepositoryInterface {
+export interface CategoryCounterInterface {
   /**
    * IDとユーザーIDでカテゴリを検索する
    * @param id - カテゴリID
@@ -34,11 +35,11 @@ export interface CategoryRepositoryInterface {
 }
 
 /**
- * カテゴリリポジトリの実装
+ * カテゴリカウンターの実装
  */
-export class CategoryRepository implements CategoryRepositoryInterface {
+export class CategoryCounter implements CategoryCounterInterface {
   /**
-   * CategoryRepositoryを作成する
+   * CategoryCounterを作成する
    * @param db - Drizzleデータベースまたはトランザクションインスタンス
    */
   constructor(private db: DatabaseOrTransaction) {}
@@ -55,7 +56,7 @@ export class CategoryRepository implements CategoryRepositoryInterface {
       .from(categories)
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
       .limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   /**

@@ -11,11 +11,11 @@ import { CategoryRepository as CategoryCrudRepository } from "../features/catego
 import { CategoryService } from "../features/category/service";
 import { TagRepository as TagCrudRepository } from "../features/tag/repository";
 import { TagService } from "../features/tag/service";
-import { CategoryRepository } from "../features/todo/category-repository";
+import { CategoryCounter } from "../features/todo/category-counter";
 import { TodoSearchRepository } from "../features/todo/search-repository";
 import { TodoSearchService } from "../features/todo/search-service";
 import { TodoService } from "../features/todo/service";
-import { TagRepository } from "../features/todo/tag-repository";
+import { TagValidator } from "../features/todo/tag-validator";
 import { TodoRepository } from "../features/todo/todo-repository";
 import { TodoTagRepository } from "../features/todo/todo-tag-repository";
 import { type DatabaseOrTransaction, getDb } from "./db";
@@ -70,10 +70,10 @@ export function getAuthService(): AuthService {
 export interface RepositoryFactories {
   /** TodoRepositoryを作成する */
   createTodoRepository: (db: DatabaseOrTransaction) => TodoRepository;
-  /** CategoryRepositoryを作成する */
-  createCategoryRepository: (db: DatabaseOrTransaction) => CategoryRepository;
-  /** TagRepositoryを作成する */
-  createTagRepository: (db: DatabaseOrTransaction) => TagRepository;
+  /** CategoryCounterを作成する */
+  createCategoryRepository: (db: DatabaseOrTransaction) => CategoryCounter;
+  /** TagValidatorを作成する */
+  createTagRepository: (db: DatabaseOrTransaction) => TagValidator;
   /** TodoTagRepositoryを作成する */
   createTodoTagRepository: (db: DatabaseOrTransaction) => TodoTagRepository;
 }
@@ -85,8 +85,8 @@ export interface RepositoryFactories {
 export function getRepositoryFactories(): RepositoryFactories {
   return {
     createTodoRepository: (db) => new TodoRepository(db),
-    createCategoryRepository: (db) => new CategoryRepository(db),
-    createTagRepository: (db) => new TagRepository(db),
+    createCategoryRepository: (db) => new CategoryCounter(db),
+    createTagRepository: (db) => new TagValidator(db),
     createTodoTagRepository: (db) => new TodoTagRepository(db),
   };
 }
@@ -105,8 +105,8 @@ export function getTodoService(): TodoService {
   return new TodoService(
     db,
     new TodoRepository(db),
-    new CategoryRepository(db),
-    new TagRepository(db),
+    new CategoryCounter(db),
+    new TagValidator(db),
     getRepositoryFactories(),
   );
 }
