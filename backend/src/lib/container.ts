@@ -12,6 +12,8 @@ import { CategoryService } from "../features/category/service";
 import { TagRepository as TagCrudRepository } from "../features/tag/repository";
 import { TagService } from "../features/tag/service";
 import { CategoryRepository } from "../features/todo/category-repository";
+import { TodoSearchRepository } from "../features/todo/search-repository";
+import { TodoSearchService } from "../features/todo/search-service";
 import { TodoService } from "../features/todo/service";
 import { TagRepository } from "../features/todo/tag-repository";
 import { TodoRepository } from "../features/todo/todo-repository";
@@ -107,6 +109,15 @@ export function getTodoService(): TodoService {
     new TagRepository(db),
     getRepositoryFactories(),
   );
+}
+
+/**
+ * TodoSearchServiceのインスタンスを取得する
+ * @returns TodoSearchServiceインスタンス
+ */
+export function getTodoSearchService(): TodoSearchService {
+  const db = getDb();
+  return new TodoSearchService(new TodoSearchRepository(db));
 }
 
 // ============================================

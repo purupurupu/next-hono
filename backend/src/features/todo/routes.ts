@@ -5,10 +5,11 @@
 
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { getTodoService } from "../../lib/container";
+import { getTodoSearchService, getTodoService } from "../../lib/container";
 import { created, noContent, ok } from "../../lib/response";
 import { handleValidationError } from "../../lib/validator";
 import { getCurrentUser, jwtAuth } from "../../shared/middleware/auth";
+import { normalizeSearchParams, searchTodoSchema } from "./search-validators";
 import { createTodoSchema, idParamSchema, updateOrderSchema, updateTodoSchema } from "./validators";
 
 const todos = new Hono();
@@ -24,6 +25,20 @@ todos.get("/", async (c) => {
   const user = getCurrentUser(c);
   const todoService = getTodoService();
   const result = await todoService.list(user.id);
+  return ok(c, result);
+});
+
+/**
+ * Todo検索・フィルタリング
+ * GET /api/v1/todos/search
+ * 注意: /:id より前に定義する必要がある
+ */
+todos.get("/search", zValidator("query", searchTodoSchema, handleValidationError()), async (c) => {
+  const user = getCurrentUser(c);
+  const rawParams = c.req.valid("query");
+  const params = normalizeSearchParams(rawParams);
+  const searchService = getTodoSearchService();
+  const result = await searchService.search(params, user.id);
   return ok(c, result);
 });
 
