@@ -267,32 +267,40 @@
 ## Phase 4: Todo検索・フィルタリング（高優先）
 
 ### バリデータ
-- [ ] `src/validators/todo-search.ts`
-  - [ ] `searchTodoSchema` - 全クエリパラメータ
+- [x] `src/features/todo/search-validators.ts`
+  - [x] `searchTodoSchema` - 全クエリパラメータ
 
 ### Service
-- [ ] `src/services/todo-search.ts`
-  - [ ] フィルター条件
-    - [ ] q: タイトル・説明のILIKE検索
-    - [ ] status: ステータスフィルター（複数対応）
-    - [ ] priority: 優先度フィルター
-    - [ ] category_id: カテゴリフィルター（-1でカテゴリなし）
-    - [ ] tag_ids: タグフィルター
-    - [ ] tag_mode: "all" または "any"
-    - [ ] due_date_from / due_date_to: 日付範囲
-  - [ ] ソート
-    - [ ] sort_by: due_date, created_at, updated_at, priority, position, title, status
-    - [ ] sort_order: asc, desc
-    - [ ] due_dateソートでNULLを最後に配置
-  - [ ] ページネーション
-    - [ ] page（デフォルト: 1）
-    - [ ] per_page（デフォルト: 20、最大100）
+- [x] `src/features/todo/search-service.ts`
+  - [x] フィルター条件
+    - [x] q: タイトル・説明のILIKE検索
+    - [x] status: ステータスフィルター（複数対応）
+    - [x] priority: 優先度フィルター
+    - [x] category_id: カテゴリフィルター（-1でカテゴリなし）
+    - [x] tag_ids: タグフィルター
+    - [x] tag_mode: "all" または "any"
+    - [x] due_date_from / due_date_to: 日付範囲
+  - [x] ソート
+    - [x] sort_by: due_date, created_at, updated_at, priority, position, title, status
+    - [x] sort_order: asc, desc
+    - [x] due_dateソートでNULLを最後に配置
+  - [x] ページネーション
+    - [x] page（デフォルト: 1）
+    - [x] per_page（デフォルト: 20、最大100）
+
+### Repository
+- [x] `src/features/todo/search-repository.ts`
+  - [x] WHERE条件構築
+  - [x] タグフィルター（ANY/ALLモード）
+  - [x] ソート条件構築
+  - [x] ページネーション
+  - [x] リレーション取得
 
 ### Routes
-- [ ] `src/routes/todos.ts` に追加
-  - [ ] `GET /api/v1/todos/search`
-  - [ ] クエリパラメータ解析（配列形式とカンマ区切り両対応）
-  - [ ] ページネーションメタデータ付きレスポンス
+- [x] `src/features/todo/routes.ts` に追加
+  - [x] `GET /api/v1/todos/search`
+  - [x] クエリパラメータ解析（配列形式とカンマ区切り両対応）
+  - [x] ページネーションメタデータ付きレスポンス
 
 ### レスポンス形式
 ```json
@@ -309,14 +317,14 @@
 ```
 
 ### テスト
-- [ ] 基本検索テスト
-- [ ] テキスト検索テスト
-- [ ] 各フィルター条件テスト（status, priority, category, tags, date range）
-- [ ] タグAND/OR検索テスト
-- [ ] ソートテスト（due_date NULL最後含む）
-- [ ] ページネーションテスト
-- [ ] 複合条件テスト
-- [ ] ユーザースコープテスト
+- [x] 基本検索テスト
+- [x] テキスト検索テスト
+- [x] 各フィルター条件テスト（status, priority, category, tags, date range）
+- [x] タグAND/OR検索テスト
+- [x] ソートテスト（due_date NULL最後含む）
+- [x] ページネーションテスト
+- [x] 複合条件テスト
+- [x] ユーザースコープテスト
 
 ### フロントエンド統合確認
 - [ ] 検索ボックス動作
