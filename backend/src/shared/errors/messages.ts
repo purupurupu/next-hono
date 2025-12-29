@@ -13,6 +13,20 @@ export const TODO_ERROR_MESSAGES = {
   ORDER_FORBIDDEN: "更新できないTodoが含まれています",
 } as const;
 
+/** カテゴリ機能のエラーメッセージ */
+export const CATEGORY_ERROR_MESSAGES = {
+  /** 名前重複 */
+  DUPLICATE_NAME: "同じ名前のカテゴリが既に存在します",
+  /** Todoが紐づいているため削除不可 */
+  HAS_TODOS: "このカテゴリにはTodoが紐づいているため削除できません",
+} as const;
+
+/** タグ機能のエラーメッセージ */
+export const TAG_ERROR_MESSAGES = {
+  /** 名前重複 */
+  DUPLICATE_NAME: "同じ名前のタグが既に存在します",
+} as const;
+
 /** 認証機能のエラーメッセージ */
 export const AUTH_ERROR_MESSAGES = {
   /** パスワード不一致 */
