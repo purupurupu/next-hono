@@ -1,13 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/lib/app";
-import { getDb } from "../src/lib/db";
-import { categories, tags } from "../src/models/schema";
 import {
-  authResponseSchema,
   errorResponseSchema,
   todoListResponseSchema,
   todoResponseSchema,
 } from "../src/shared/validators/responses";
+import { createTestCategory, createTestTag, createTestUser } from "./helpers/factory";
 import { parseResponse } from "./helpers/response";
 import { clearDatabase } from "./setup";
 
@@ -16,64 +14,6 @@ const app = createApp();
 describe("Todo API", () => {
   let token: string;
   let userId: number;
-
-  /**
-   * ユーザーを作成してトークンを取得
-   */
-  async function createTestUser(
-    email = "todo-test@example.com",
-  ): Promise<{ token: string; userId: number }> {
-    const response = await app.request("/auth/sign_up", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password: "password123",
-        password_confirmation: "password123",
-        name: "テストユーザー",
-      }),
-    });
-    const body = await parseResponse(response, authResponseSchema);
-    return { token: body.token, userId: body.user.id };
-  }
-
-  /**
-   * テスト用カテゴリを作成
-   */
-  async function createTestCategory(
-    userIdParam: number,
-    name = "テストカテゴリ",
-  ): Promise<number> {
-    const db = getDb();
-    const result = await db
-      .insert(categories)
-      .values({
-        userId: userIdParam,
-        name,
-        color: "#ff0000",
-      })
-      .returning();
-    return result[0].id;
-  }
-
-  /**
-   * テスト用タグを作成
-   */
-  async function createTestTag(
-    userIdParam: number,
-    name = "テストタグ",
-  ): Promise<number> {
-    const db = getDb();
-    const result = await db
-      .insert(tags)
-      .values({
-        userId: userIdParam,
-        name,
-        color: "#00ff00",
-      })
-      .returning();
-    return result[0].id;
-  }
 
   beforeAll(async () => {
     await clearDatabase();
