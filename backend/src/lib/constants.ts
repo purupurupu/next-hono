@@ -9,6 +9,15 @@ export const AUTH = {
   BCRYPT_COST: 12,
   /** JWTの有効期限 */
   JWT_EXPIRES_IN: "24h",
+  /** Bearer認証スキーム */
+  BEARER_SCHEME: "Bearer ",
+  /** Bearer認証スキームの長さ */
+  BEARER_SCHEME_LENGTH: 7,
+  /** コンテキストキー */
+  CONTEXT_KEYS: {
+    AUTH: "auth",
+    USER: "user",
+  },
 } as const;
 
 /** バリデーション関連の定数 */
@@ -65,4 +74,12 @@ export const CATEGORY = {
 export const TAG = {
   /** 名前の最大文字数 */
   NAME_MAX_LENGTH: 30,
+} as const;
+
+/** リソース名（notFound等のエラーメッセージで使用） */
+export const RESOURCE_NAMES = {
+  TODO: "Todo",
+  CATEGORY: "カテゴリ",
+  TAG: "タグ",
+  USER: "ユーザー",
 } as const;

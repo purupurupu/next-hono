@@ -3,7 +3,7 @@
  * @module features/todo/service
  */
 
-import { TODO } from "../../lib/constants";
+import { RESOURCE_NAMES, TODO } from "../../lib/constants";
 import type { RepositoryFactories } from "../../lib/container";
 import type { Database } from "../../lib/db";
 import { notFound } from "../../lib/errors";
@@ -12,9 +12,9 @@ import {
   validateMultipleOwnership,
   validateSingleOwnership,
 } from "../../shared/validators/ownership";
-import type { CategoryRepositoryInterface } from "./category-repository";
-import type { TagRepositoryInterface } from "./tag-repository";
+import type { TodoCategoryRepositoryInterface } from "./todo-category-repository";
 import type { TodoRepositoryInterface } from "./todo-repository";
+import type { TodoTagValidatorRepositoryInterface } from "./todo-tag-validator-repository";
 import { formatTodoResponse, type TodoResponse, type TodoUpdateData } from "./types";
 import type { CreateTodoInput, UpdateOrderInput, UpdateTodoInput } from "./validators";
 
@@ -114,15 +114,15 @@ export class TodoService {
    * TodoServiceを作成する
    * @param db - データベースインスタンス
    * @param todoRepository - Todoリポジトリ
-   * @param categoryRepository - カテゴリリポジトリ
-   * @param tagRepository - タグリポジトリ
+   * @param todoCategoryRepository - カテゴリリポジトリ（所有者検証・カウント更新用）
+   * @param todoTagValidatorRepository - タグ検証リポジトリ（所有者検証用）
    * @param factories - トランザクション用リポジトリファクトリ
    */
   constructor(
     private db: Database,
     private todoRepository: TodoRepositoryInterface,
-    private categoryRepository: CategoryRepositoryInterface,
-    private tagRepository: TagRepositoryInterface,
+    private todoCategoryRepository: TodoCategoryRepositoryInterface,
+    private todoTagValidatorRepository: TodoTagValidatorRepositoryInterface,
     private factories: RepositoryFactories,
   ) {}
 
@@ -146,7 +146,7 @@ export class TodoService {
   async show(id: number, userId: number): Promise<TodoResponse> {
     const todo = await this.todoRepository.findById(id, userId);
     if (!todo) {
-      throw notFound("Todo", id);
+      throw notFound(RESOURCE_NAMES.TODO, id);
     }
     return formatTodoResponse(todo);
   }
@@ -196,7 +196,7 @@ export class TodoService {
       // リレーション付きで再取得
       const created = await txTodoRepo.findById(todo.id, userId);
       if (!created) {
-        throw notFound("Todo", todo.id);
+        throw notFound(RESOURCE_NAMES.TODO, todo.id);
       }
 
       return formatTodoResponse(created);
@@ -216,7 +216,7 @@ export class TodoService {
     // 既存のTodoを取得（トランザクション外で事前検証）
     const existing = await this.todoRepository.findById(id, userId);
     if (!existing) {
-      throw notFound("Todo", id);
+      throw notFound(RESOURCE_NAMES.TODO, id);
     }
 
     const oldCategoryId = existing.todo.categoryId;
@@ -264,7 +264,7 @@ export class TodoService {
       // リレーション付きで再取得
       const updated = await txTodoRepo.findById(id, userId);
       if (!updated) {
-        throw notFound("Todo", id);
+        throw notFound(RESOURCE_NAMES.TODO, id);
       }
 
       return formatTodoResponse(updated);
@@ -281,7 +281,7 @@ export class TodoService {
     // 既存のTodoを取得（トランザクション外で事前検証）
     const existing = await this.todoRepository.findById(id, userId);
     if (!existing) {
-      throw notFound("Todo", id);
+      throw notFound(RESOURCE_NAMES.TODO, id);
     }
 
     const categoryId = existing.todo.categoryId;
@@ -332,7 +332,7 @@ export class TodoService {
     await validateSingleOwnership(
       categoryId,
       userId,
-      this.categoryRepository,
+      this.todoCategoryRepository,
       TODO_ERROR_MESSAGES.CATEGORY_FORBIDDEN,
     );
   }
@@ -347,7 +347,7 @@ export class TodoService {
     await validateMultipleOwnership(
       tagIds,
       userId,
-      this.tagRepository,
+      this.todoTagValidatorRepository,
       TODO_ERROR_MESSAGES.TAGS_FORBIDDEN,
     );
   }

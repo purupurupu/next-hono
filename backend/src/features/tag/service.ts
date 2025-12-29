@@ -3,7 +3,9 @@
  * @module features/tag/service
  */
 
+import { RESOURCE_NAMES } from "../../lib/constants";
 import { conflict, notFound } from "../../lib/errors";
+import { TAG_ERROR_MESSAGES } from "../../shared/errors/messages";
 import type { TagRepositoryInterface } from "./repository";
 import { formatTagResponse, type TagResponse } from "./types";
 import type { CreateTagInput, UpdateTagInput } from "./validators";
@@ -39,7 +41,7 @@ export class TagService {
   async show(id: number, userId: number): Promise<TagResponse> {
     const tag = await this.tagRepository.findById(id, userId);
     if (!tag) {
-      throw notFound("タグ", id);
+      throw notFound(RESOURCE_NAMES.TAG, id);
     }
     return formatTagResponse(tag);
   }
@@ -55,7 +57,7 @@ export class TagService {
     // ユニーク制約チェック（正規化後の名前で）
     const existing = await this.tagRepository.findByName(input.name, userId);
     if (existing) {
-      throw conflict("同じ名前のタグが既に存在します");
+      throw conflict(TAG_ERROR_MESSAGES.DUPLICATE_NAME);
     }
 
     const tag = await this.tagRepository.create({
@@ -78,14 +80,14 @@ export class TagService {
   async update(id: number, input: UpdateTagInput, userId: number): Promise<TagResponse> {
     const existing = await this.tagRepository.findById(id, userId);
     if (!existing) {
-      throw notFound("タグ", id);
+      throw notFound(RESOURCE_NAMES.TAG, id);
     }
 
     // 名前変更時のユニーク制約チェック
     if (input.name && input.name !== existing.name) {
       const duplicate = await this.tagRepository.findByName(input.name, userId);
       if (duplicate) {
-        throw conflict("同じ名前のタグが既に存在します");
+        throw conflict(TAG_ERROR_MESSAGES.DUPLICATE_NAME);
       }
     }
 
@@ -94,7 +96,7 @@ export class TagService {
       color: input.color,
     });
     if (!updated) {
-      throw notFound("タグ", id);
+      throw notFound(RESOURCE_NAMES.TAG, id);
     }
     return formatTagResponse(updated);
   }
@@ -108,7 +110,7 @@ export class TagService {
   async destroy(id: number, userId: number): Promise<void> {
     const existing = await this.tagRepository.findById(id, userId);
     if (!existing) {
-      throw notFound("タグ", id);
+      throw notFound(RESOURCE_NAMES.TAG, id);
     }
 
     // todo_tagsはカスケード削除される

@@ -46,7 +46,7 @@ export class UserRepository implements UserRepositoryInterface {
    */
   async findByEmail(email: string): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   /**
@@ -56,7 +56,7 @@ export class UserRepository implements UserRepositoryInterface {
    */
   async findById(id: number): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   /**
@@ -66,6 +66,10 @@ export class UserRepository implements UserRepositoryInterface {
    */
   async create(user: NewUser): Promise<User> {
     const result = await this.db.insert(users).values(user).returning();
-    return result[0];
+    const record = result.at(0);
+    if (!record) {
+      throw new Error("Failed to create user");
+    }
+    return record;
   }
 }

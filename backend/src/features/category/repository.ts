@@ -84,7 +84,7 @@ export class CategoryRepository implements CategoryRepositoryInterface {
       .from(categories)
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
       .limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   async findByName(name: string, userId: number): Promise<Category | undefined> {
@@ -93,12 +93,16 @@ export class CategoryRepository implements CategoryRepositoryInterface {
       .from(categories)
       .where(and(eq(categories.name, name), eq(categories.userId, userId)))
       .limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   async create(data: NewCategory): Promise<Category> {
     const result = await this.db.insert(categories).values(data).returning();
-    return result[0];
+    const record = result.at(0);
+    if (!record) {
+      throw new Error("Failed to create category");
+    }
+    return record;
   }
 
   async update(
@@ -111,7 +115,7 @@ export class CategoryRepository implements CategoryRepositoryInterface {
       .set({ ...data, updatedAt: new Date() })
       .where(and(eq(categories.id, id), eq(categories.userId, userId)))
       .returning();
-    return result[0];
+    return result.at(0);
   }
 
   async delete(id: number, userId: number): Promise<boolean> {

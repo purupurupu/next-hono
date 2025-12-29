@@ -157,6 +157,24 @@ backend/
   - Drizzleではトランザクション内の操作にはトランザクションオブジェクト(tx)を使用する必要がある
   - 通常のdb接続を使うとトランザクション外の操作になるため、ファクトリで新しいインスタンスを作成
 
+**リポジトリ命名規則**:
+- リポジトリクラスは常に `Repository` サフィックスを使用する
+- 他featureのCRUDリポジトリと区別するため、feature名をプレフィックスとして付与する
+
+| リポジトリ | ファイル | 役割 |
+|-----------|---------|------|
+| `TodoRepository` | `todo-repository.ts` | Todo CRUD操作 |
+| `TodoCategoryRepository` | `todo-category-repository.ts` | カテゴリ所有者検証・Todoカウント更新 |
+| `TodoTagRepository` | `todo-tag-repository.ts` | todo_tags中間テーブル操作（syncTags） |
+| `TodoTagValidatorRepository` | `todo-tag-validator-repository.ts` | タグ所有者検証（findByIds） |
+| `CategoryRepository` | `features/category/repository.ts` | カテゴリCRUD操作 |
+| `TagRepository` | `features/tag/repository.ts` | タグCRUD操作 |
+
+**命名の判断基準**:
+- CRUDリポジトリ: `[Entity]Repository`（例: `CategoryRepository`）
+- 特定feature用のサポートリポジトリ: `[Feature][Entity]Repository`（例: `TodoCategoryRepository`）
+- 特定の役割を持つリポジトリ: `[Feature][Entity][Role]Repository`（例: `TodoTagValidatorRepository`）
+
 **Key Dependencies**:
 - Hono (web framework)
 - Drizzle ORM (database)

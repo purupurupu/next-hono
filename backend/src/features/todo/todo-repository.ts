@@ -220,7 +220,11 @@ export class TodoRepository implements TodoRepositoryInterface {
    */
   async create(data: NewTodo): Promise<Todo> {
     const result = await this.db.insert(todos).values(data).returning();
-    return result[0];
+    const record = result.at(0);
+    if (!record) {
+      throw new Error("Failed to create todo");
+    }
+    return record;
   }
 
   /**
@@ -243,7 +247,7 @@ export class TodoRepository implements TodoRepositoryInterface {
       })
       .where(and(eq(todos.id, id), eq(todos.userId, userId)))
       .returning();
-    return result[0];
+    return result.at(0);
   }
 
   /**

@@ -3,7 +3,9 @@
  * @module features/category/service
  */
 
+import { RESOURCE_NAMES } from "../../lib/constants";
 import { conflict, notFound, validationError } from "../../lib/errors";
+import { CATEGORY_ERROR_MESSAGES } from "../../shared/errors/messages";
 import type { CategoryRepositoryInterface } from "./repository";
 import { type CategoryResponse, formatCategoryResponse } from "./types";
 import type { CreateCategoryInput, UpdateCategoryInput } from "./validators";
@@ -39,7 +41,7 @@ export class CategoryService {
   async show(id: number, userId: number): Promise<CategoryResponse> {
     const category = await this.categoryRepository.findById(id, userId);
     if (!category) {
-      throw notFound("カテゴリ", id);
+      throw notFound(RESOURCE_NAMES.CATEGORY, id);
     }
     return formatCategoryResponse(category);
   }
@@ -55,7 +57,7 @@ export class CategoryService {
     // ユニーク制約チェック
     const existing = await this.categoryRepository.findByName(input.name, userId);
     if (existing) {
-      throw conflict("同じ名前のカテゴリが既に存在します");
+      throw conflict(CATEGORY_ERROR_MESSAGES.DUPLICATE_NAME);
     }
 
     const category = await this.categoryRepository.create({
@@ -78,14 +80,14 @@ export class CategoryService {
   async update(id: number, input: UpdateCategoryInput, userId: number): Promise<CategoryResponse> {
     const existing = await this.categoryRepository.findById(id, userId);
     if (!existing) {
-      throw notFound("カテゴリ", id);
+      throw notFound(RESOURCE_NAMES.CATEGORY, id);
     }
 
     // 名前変更時のユニーク制約チェック
     if (input.name && input.name !== existing.name) {
       const duplicate = await this.categoryRepository.findByName(input.name, userId);
       if (duplicate) {
-        throw conflict("同じ名前のカテゴリが既に存在します");
+        throw conflict(CATEGORY_ERROR_MESSAGES.DUPLICATE_NAME);
       }
     }
 
@@ -94,7 +96,7 @@ export class CategoryService {
       color: input.color,
     });
     if (!updated) {
-      throw notFound("カテゴリ", id);
+      throw notFound(RESOURCE_NAMES.CATEGORY, id);
     }
     return formatCategoryResponse(updated);
   }
@@ -109,12 +111,12 @@ export class CategoryService {
   async destroy(id: number, userId: number): Promise<void> {
     const existing = await this.categoryRepository.findById(id, userId);
     if (!existing) {
-      throw notFound("カテゴリ", id);
+      throw notFound(RESOURCE_NAMES.CATEGORY, id);
     }
 
     // Todo紐づきチェック
     if (existing.todosCount > 0) {
-      throw validationError("このカテゴリにはTodoが紐づいているため削除できません");
+      throw validationError(CATEGORY_ERROR_MESSAGES.HAS_TODOS);
     }
 
     await this.categoryRepository.delete(id, userId);

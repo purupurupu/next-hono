@@ -80,7 +80,7 @@ export class TagRepository implements TagRepositoryInterface {
       .from(tags)
       .where(and(eq(tags.id, id), eq(tags.userId, userId)))
       .limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   async findByName(name: string, userId: number): Promise<Tag | undefined> {
@@ -89,12 +89,16 @@ export class TagRepository implements TagRepositoryInterface {
       .from(tags)
       .where(and(eq(tags.name, name), eq(tags.userId, userId)))
       .limit(1);
-    return result[0];
+    return result.at(0);
   }
 
   async create(data: NewTag): Promise<Tag> {
     const result = await this.db.insert(tags).values(data).returning();
-    return result[0];
+    const record = result.at(0);
+    if (!record) {
+      throw new Error("Failed to create tag");
+    }
+    return record;
   }
 
   async update(
@@ -107,7 +111,7 @@ export class TagRepository implements TagRepositoryInterface {
       .set({ ...data, updatedAt: new Date() })
       .where(and(eq(tags.id, id), eq(tags.userId, userId)))
       .returning();
-    return result[0];
+    return result.at(0);
   }
 
   async delete(id: number, userId: number): Promise<boolean> {
