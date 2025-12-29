@@ -1,15 +1,10 @@
 import type { Context, MiddlewareHandler } from "hono";
 import type { TokenPayload } from "../../features/auth/token-schema";
+import { AUTH } from "../../lib/constants";
 import { getAuthService, getUserRepository } from "../../lib/container";
 import { handleJoseError, isJoseError, unauthorized } from "../../lib/errors";
 import { hasProperties, isRecord } from "../../lib/type-guards";
 import type { User } from "../../models/schema";
-
-/** 認証コンテキストのキー */
-const AUTH_CONTEXT_KEY = "auth";
-
-/** ユーザーコンテキストのキー */
-const USER_CONTEXT_KEY = "user";
 
 /** 認証コンテキストの型定義 */
 export interface AuthContext {
@@ -59,11 +54,11 @@ export function jwtAuth(): MiddlewareHandler {
       throw unauthorized("認証トークンが必要です");
     }
 
-    if (!authHeader.startsWith("Bearer ")) {
+    if (!authHeader.startsWith(AUTH.BEARER_SCHEME)) {
       throw unauthorized("無効な認証ヘッダー形式です");
     }
 
-    const token = authHeader.slice(7);
+    const token = authHeader.slice(AUTH.BEARER_SCHEME_LENGTH);
 
     if (!token) {
       throw unauthorized("トークンが指定されていません");
@@ -82,8 +77,8 @@ export function jwtAuth(): MiddlewareHandler {
         throw unauthorized("ユーザーが見つかりません");
       }
 
-      c.set(AUTH_CONTEXT_KEY, { payload, user });
-      c.set(USER_CONTEXT_KEY, user);
+      c.set(AUTH.CONTEXT_KEYS.AUTH, { payload, user });
+      c.set(AUTH.CONTEXT_KEYS.USER, user);
 
       await next();
     } catch (error) {
@@ -102,7 +97,7 @@ export function jwtAuth(): MiddlewareHandler {
  * @throws 認証されていない場合は401エラー
  */
 export function getAuthContext(c: Context): AuthContext {
-  const auth: unknown = c.get(AUTH_CONTEXT_KEY);
+  const auth: unknown = c.get(AUTH.CONTEXT_KEYS.AUTH);
   if (!isAuthContext(auth)) {
     throw unauthorized("認証されていません");
   }
@@ -116,7 +111,7 @@ export function getAuthContext(c: Context): AuthContext {
  * @throws 認証されていない場合は401エラー
  */
 export function getCurrentUser(c: Context): User {
-  const user: unknown = c.get(USER_CONTEXT_KEY);
+  const user: unknown = c.get(AUTH.CONTEXT_KEYS.USER);
   if (!isUser(user)) {
     throw unauthorized("認証されていません");
   }
