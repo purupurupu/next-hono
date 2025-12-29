@@ -12,9 +12,9 @@ import {
   validateMultipleOwnership,
   validateSingleOwnership,
 } from "../../shared/validators/ownership";
-import type { CategoryCounterInterface } from "./category-counter";
-import type { TagValidatorInterface } from "./tag-validator";
+import type { TodoCategoryRepositoryInterface } from "./todo-category-repository";
 import type { TodoRepositoryInterface } from "./todo-repository";
+import type { TodoTagValidatorRepositoryInterface } from "./todo-tag-validator-repository";
 import { formatTodoResponse, type TodoResponse, type TodoUpdateData } from "./types";
 import type { CreateTodoInput, UpdateOrderInput, UpdateTodoInput } from "./validators";
 
@@ -114,15 +114,15 @@ export class TodoService {
    * TodoServiceを作成する
    * @param db - データベースインスタンス
    * @param todoRepository - Todoリポジトリ
-   * @param categoryCounter - カテゴリカウンター（所有者検証・カウント更新用）
-   * @param tagValidator - タグバリデータ（所有者検証用）
+   * @param todoCategoryRepository - カテゴリリポジトリ（所有者検証・カウント更新用）
+   * @param todoTagValidatorRepository - タグ検証リポジトリ（所有者検証用）
    * @param factories - トランザクション用リポジトリファクトリ
    */
   constructor(
     private db: Database,
     private todoRepository: TodoRepositoryInterface,
-    private categoryCounter: CategoryCounterInterface,
-    private tagValidator: TagValidatorInterface,
+    private todoCategoryRepository: TodoCategoryRepositoryInterface,
+    private todoTagValidatorRepository: TodoTagValidatorRepositoryInterface,
     private factories: RepositoryFactories,
   ) {}
 
@@ -332,7 +332,7 @@ export class TodoService {
     await validateSingleOwnership(
       categoryId,
       userId,
-      this.categoryCounter,
+      this.todoCategoryRepository,
       TODO_ERROR_MESSAGES.CATEGORY_FORBIDDEN,
     );
   }
@@ -347,7 +347,7 @@ export class TodoService {
     await validateMultipleOwnership(
       tagIds,
       userId,
-      this.tagValidator,
+      this.todoTagValidatorRepository,
       TODO_ERROR_MESSAGES.TAGS_FORBIDDEN,
     );
   }

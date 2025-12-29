@@ -1,7 +1,7 @@
 /**
- * タグバリデータ（Todo機能用）
+ * タグ検証リポジトリ（Todo機能用）
  * タグの所有者検証を提供する
- * @module features/todo/tag-validator
+ * @module features/todo/todo-tag-validator-repository
  */
 
 import { and, eq, inArray } from "drizzle-orm";
@@ -9,10 +9,10 @@ import type { DatabaseOrTransaction } from "../../lib/db";
 import { type Tag, tags } from "../../models/schema";
 
 /**
- * タグバリデータのインターフェース（Todo機能用）
+ * タグ検証リポジトリのインターフェース（Todo機能用）
  * タグの所有者検証のみを提供
  */
-export interface TagValidatorInterface {
+export interface TodoTagValidatorRepositoryInterface {
   /**
    * 複数のIDとユーザーIDでタグを検索する
    * @param ids - タグIDの配列
@@ -23,11 +23,11 @@ export interface TagValidatorInterface {
 }
 
 /**
- * タグバリデータの実装
+ * タグ検証リポジトリの実装（Todo機能用）
  */
-export class TagValidator implements TagValidatorInterface {
+export class TodoTagValidatorRepository implements TodoTagValidatorRepositoryInterface {
   /**
-   * TagValidatorを作成する
+   * TodoTagValidatorRepositoryを作成する
    * @param db - Drizzleデータベースまたはトランザクションインスタンス
    */
   constructor(private db: DatabaseOrTransaction) {}
